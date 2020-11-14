@@ -1,0 +1,16 @@
+[
+	{
+		"name":"auth",
+		"ip":"127.0.0.1",
+		"port":5000,
+		"token":"abcdefg",
+		"auth":false,
+	},
+	{
+		"name":"channel_1",
+		"ip":"127.0.0.1",
+		"port":5001,
+		"token":"abcdefg",
+		"auth":true
+	}
+]
