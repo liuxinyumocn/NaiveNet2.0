@@ -1,31 +1,31 @@
 <view class="container">
     <button bindtap="conn">建立连接</button>
-    <view class="tip">
+    <!-- <view class="tip">
         建立连接后通常会在数秒后发生连接断开
-    </view>
+    </view> -->
     <button bindtap="auth">认证</button>
-    <view class="tip">
+    <!-- <view class="tip">
         认证后将持续保持连接
-    </view>
+    </view> -->
     <button bindtap="request">向NC1发起请求</button>
-    <view class="tip">
+    <!-- <view class="tip">
         NC1将收到参数为“你好，欢迎来到...”的请求 被打印到控制台
-    </view>
-    <button bindtap="break">断开连接（非退出）</button>
-    <view class="tip">
+    </view> -->
+    <button bindtap="break">断开（非退出）</button>
+    <!-- <view class="tip">
         断开连接通常可以放在 onHide 回调中，当 onShow 时再 recover ，这样可以准确控制事件。
-    </view>
+    </view> -->
     <button bindtap="recover">恢复连接</button>
-    <view class="tip">
+    <!-- <view class="tip">
         断开后恢复网络，NC侧将收到相应的事件。
-    </view>
-    <button bindtap="close">只关闭NC1</button>
-    <view class="tip">
+    </view> -->
+    <button bindtap="quitChannel">只关闭NC1</button>
+    <!-- <view class="tip">
         NS仍然保持连接，可以随时请求其他NC，NC1资源被释放。    
-    </view>
+    </view> -->
     <button bindtap="close">彻底关闭</button>
-    <view class="tip">
+    <!-- <view class="tip">
         关闭连接，所有正在连接中的NC都会收到 quit 回调，同时资源被释放。    
-    </view>
+    </view> -->
     
 </view>

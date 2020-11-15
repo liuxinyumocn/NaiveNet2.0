@@ -61,15 +61,15 @@ public class NaiveNetProtocolParse extends ChannelInboundHandlerAdapter{
 			index = NaiveNetProtocolParse.bytearrindexof(data, data.length, "Sec-WebSocket-Key".getBytes(), 1024);
 			if(index == -1) {
 				pipeline.addLast(hNaiveNetHttpServerHandler);
-				System.out.println("HTTP");
+				//System.out.println("HTTP");
 			}else {
 				pipeline.addLast(hWebSocketServerProtocolHandler);
 				pipeline.addLast(hNaiveNetBinaryWebSocketFrameHandler);
 				//pipeline.addLast(new NaiveNetBinaryWebSocketOutBoundHandler());
-				System.out.println("WS");
+				//System.out.println("WS");
 			}
 		}else { //否则按照NAIVENET协议通信
-			System.out.println("NAIVE");
+			//System.out.println("NAIVE");
 			pipeline.addLast(hNaiveNetNaiveProtocolHandler);
 		}
 		pipeline.remove(this);

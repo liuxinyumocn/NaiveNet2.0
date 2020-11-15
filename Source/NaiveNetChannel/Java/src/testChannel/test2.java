@@ -32,8 +32,9 @@ public class test2 {
 
 				NaiveNetResponse res = msg.getResponseHandler();
 				
-			
+				User user = msg.user;
 				
+				user.addBox(null);
 				res.setContent("你好，欢迎来到NaiveNet世界！".getBytes());
 				
 				return null;
@@ -55,6 +56,7 @@ public class test2 {
 				@Override
 				public void on(User user, byte[] data) {
 					//System.out.println("用户发生了断线");
+					
 					user.setSession("啊哈", "嘿嘿".getBytes(), null);
 				}
 				

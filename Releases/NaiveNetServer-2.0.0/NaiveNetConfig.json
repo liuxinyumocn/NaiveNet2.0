@@ -1,6 +1,6 @@
 {
-	"SSL_JKS_FILEPATH":"F:\\NaiveNet\\Source\\NaiveNet\\ssl\\local.liuxinyumo.cn.jks",
-	"SSL_PASSWORD_FILEPATH":"F:\\NaiveNet\\Source\\NaiveNet\\ssl\\keystorePass.txt",
+	"SSL_JKS_FILEPATH":"",
+	"SSL_PASSWORD_FILEPATH":"",
 	"SERVER_PORT":4000,
 	"USER_BREAK_TIMEOUT":11000,
 	"USER_QUIT_TIMEOUT":600000,

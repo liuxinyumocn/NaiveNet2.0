@@ -22,10 +22,24 @@ public class NaiveNetHttpServerHandler extends SimpleChannelInboundHandler<FullH
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
-		System.out.println(msg.getUri());
+
+//		System.out.println(msg.getUri() );
+//
+//		System.out.println("-------");
+//		
+//		System.out.println(msg);
+//		System.out.println("-------");
+//		
+//		ByteBuf buf = msg.content();
+//		byte[] content = new byte[buf.readableBytes()];
+//		buf.readBytes(content);
+//		System.out.println(new String(content));
+//		
+//		System.out.println(msg.getMethod());
+		
 		DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1
-				,HttpResponseStatus.NOT_FOUND
-				,Unpooled.wrappedBuffer("test".getBytes()));
+				,HttpResponseStatus.ACCEPTED
+				,Unpooled.wrappedBuffer("NaiveNetServer Service started successfully".getBytes()));
 		HttpHeaders heads = response.headers();
 		heads.add(HttpHeaderNames.CONTENT_TYPE,HttpHeaderValues.TEXT_PLAIN + "; charset=UTF-8");
 		heads.add(HttpHeaderNames.CONTENT_LENGTH,response.content().readableBytes());
@@ -38,13 +52,13 @@ public class NaiveNetHttpServerHandler extends SimpleChannelInboundHandler<FullH
 	 @Override
 	 public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 		 //连接发生断开
-		 System.out.println("HTTP 连接断开");
+		 //System.out.println("HTTP 连接断开");
 
 	 }
 
 	 @Override
 	 public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-	     System.out.println("HTTP 异常发生");
+	     //System.out.println("HTTP 异常发生");
 	     ctx.close();
 	 }
 

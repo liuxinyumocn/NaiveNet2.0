@@ -1,12 +1,25 @@
 // page/index/index.js
+import NaiveNet from '../../lib/NaiveNetClient-mini.2.0.0.dev';
+let ns = new NaiveNet();
+
+ns.onBreak = function(){
+    console.log('发生断线');
+}
+
+let box = ns.createBox();
+box.addController(
+    "test",
+    function(res,response){
+        
+        console.log(res);
+
+        response('hello!');
+    }
+)
+ns.addBox(box);
+
+
 Page({
-
-    /**
-     * 页面的初始数据
-     */
-    data: {
-
-    },
 
     /**
      * 生命周期函数--监听页面加载
@@ -15,52 +28,65 @@ Page({
 
     },
 
-    /**
-     * 生命周期函数--监听页面初次渲染完成
-     */
-    onReady: function () {
+    conn: function(){
+        ns.connect({
+            ns:"ws://127.0.0.1:4000",       // wss://xxxxxxx
+            success:(res)=>{
+                console.log(res);
+            },
+            fail:(res)=>{
+                console.log("失败",res);
+            }
+        })
+    },
+    auth:function(){
+
+        ns.request({
+            channel:'my_channel_1',
+            controller:'auth',
+            data:'123456asd',
+            success:(res)=>{
+                console.log(res);
+            },
+            fail:(res)=>{
+                console.log("Failed:",res);
+            }
+
+        })
 
     },
+    request:function(){
 
-    /**
-     * 生命周期函数--监听页面显示
-     */
-    onShow: function () {
+        ns.request({
+            channel:'my_channel_1',
+            controller:'t',
+            data:'',
+            success:(res)=>{
+                console.log(res);
+            }
 
-    },
-
-    /**
-     * 生命周期函数--监听页面隐藏
-     */
-    onHide: function () {
-
-    },
-
-    /**
-     * 生命周期函数--监听页面卸载
-     */
-    onUnload: function () {
+        })
 
     },
-
-    /**
-     * 页面相关事件处理函数--监听用户下拉动作
-     */
-    onPullDownRefresh: function () {
+    break:function(){
+        ns.break();
+    },
+    recover:function(){
+        ns.recover({
+            success:(res)=>{
+                console.log(res);
+            },
+            fail:(res)=>{
+                console.log(res);
+            }
+        })
+    },
+    quitChannel:function(){
 
     },
-
-    /**
-     * 页面上拉触底事件的处理函数
-     */
-    onReachBottom: function () {
-
-    },
-
-    /**
-     * 用户点击右上角分享
-     */
-    onShareAppMessage: function () {
-
+    close:function(){
+        ns.close();
     }
+
+
 })
