@@ -1,8 +1,12 @@
 package cn.domoe.naivenet.User;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import cn.domoe.naivenet.Channel.NaiveNetChannelManager;
 import cn.domoe.naivenet.Channel.NaiveNetChannelPool;
@@ -300,6 +304,22 @@ public class User {
 	 * */
 	public String getPing() {
 		return ping;
+	}
+
+	/**
+	 * 	用户的连接信息JSON字符串
+	 * */
+	public String getLinkInfo() {
+		JSONObject json = new JSONObject();
+		try {
+			InetSocketAddress ipSocket = (InetSocketAddress)this.channel.remoteAddress();
+			json.put("ip", ipSocket.getAddress().getHostAddress());
+			json.put("starttimestamp", this.start_timestamp);
+			return json.toString();
+		} catch (JSONException e) {
+			
+		}
+		return "";
 	}
 
 

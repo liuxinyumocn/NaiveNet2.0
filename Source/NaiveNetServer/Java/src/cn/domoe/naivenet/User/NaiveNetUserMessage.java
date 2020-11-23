@@ -39,6 +39,44 @@ public class NaiveNetUserMessage extends NaiveNetMessage{
 		
 	}
 	
+	/**
+	 * 	设置频道ID并重新整理 data
+	 * */
+	public void setChannelID(int channelID) {
+		this.channelid = channelID;
+		byte[] newchannelID = NaiveNetUserMessage.calNumber(channelID);
+		if(newchannelID.length == this.channeldata.length) {
+			for(int i = 0;i<newchannelID.length;i++) {
+				this.data[i+2] = newchannelID[i];
+			}
+		}else {
+			byte[] newdata = new byte[this.data.length - this.channeldata.length + newchannelID.length];
+			int index = 0;
+			System.arraycopy(data, 0, newdata, index, 2);
+			index+=2;
+			System.arraycopy(newchannelID, 0, newdata, index, newchannelID.length);
+			index+=newchannelID.length;
+			System.arraycopy(data, 2+this.channeldata.length, newdata, index, newdata.length - index);
+			this.data = newdata;
+		}
+		this.channeldata = newchannelID;
+	}
+	
+	public static byte[] calNumber(int len) {
+		int length = len/255 + 1;
+		byte[] res = new byte[length];
+		for(int i = 0; i< res.length;i++) {
+			if(len > 255) {
+				res[i] = (byte)255;
+				len -= 255;
+			}else {
+				res[i] = (byte)len;
+				break;
+			}
+		}
+		return res;
+	}
+	
 	private void print() {
 		System.out.println("controller : ["+this.controller+"]");
 		System.out.println("param :["+new String(this.param)+"]");

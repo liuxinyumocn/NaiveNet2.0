@@ -73,7 +73,7 @@ public class NaiveNetChannelManager {
 		public void channelRead(ChannelHandlerContext ctx, Object msg) {
 			byte[] data = (byte[])msg;
 			String response = new String(data);
-			System.out.println(response);
+			//System.out.println(response);
 
 			Channel channel = ctx.channel();
 			NaiveNetMessage nnm = hashMapChannelAndNaiveNetMessage.get(channel);
@@ -106,7 +106,7 @@ public class NaiveNetChannelManager {
 			}catch(Exception e) {
 				
 			}
-			cause.printStackTrace();
+			//cause.printStackTrace();
 			ctx.close();
 			
 		}
@@ -123,6 +123,7 @@ public class NaiveNetChannelManager {
 			User user = hashMapChannelAndUser.get(channel);
 			if(user == null)
 				return;
+			
 			NaiveNetUserMessage nnm = new NaiveNetUserMessage(data,user);
 			
 			//处理
@@ -134,6 +135,10 @@ public class NaiveNetChannelManager {
 				}
 			}else { //对Client
 				//对Client的请求直接原样转发给User
+				//设定ChannelID
+				//nnm.channelid = user.channelPool.getChannelID(channel);
+				nnm.setChannelID(user.channelPool.getChannelID(channel));
+				//System.out.println(nnm.channelid);
 				user.dealNCToC(nnm);
 			}
 
@@ -141,7 +146,7 @@ public class NaiveNetChannelManager {
 		
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-			cause.printStackTrace();
+			//cause.printStackTrace();
 			try {
 				hashMapChannelAndUser.remove(ctx.channel());
 			}catch(Exception e) {
@@ -223,6 +228,9 @@ public class NaiveNetChannelManager {
 		box.addController(new Ctrl5());
 		box.addController(new Ctrl6());
 		box.addController(new Ctrl7());
+		box.addController(new Ctrl8());
+		box.addController(new Ctrl9());
+		box.addController(new Ctrl10());
 		this.addBox(box);
 	}
 	
@@ -236,8 +244,8 @@ public class NaiveNetChannelManager {
 
 		@Override
 		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
-			System.out.println("--------------------------");
-			System.out.println("开始授权");
+			//System.out.println("--------------------------");
+			//System.out.println("开始授权");
 			
 			msg.user.auth();
 			return null;
@@ -365,6 +373,50 @@ public class NaiveNetChannelManager {
 		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
 			NaiveNetResponseData res = new NaiveNetResponseData(msg,msg.user.getPing().getBytes(),true);
 			return res;
+		}
+		
+	}
+
+	class Ctrl8 extends NaiveNetController{
+
+		public Ctrl8() {
+			super("getlinkinfo");
+		}
+
+		@Override
+		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+			String json = msg.user.getLinkInfo();
+			NaiveNetResponseData res = new NaiveNetResponseData(msg,json.getBytes(),true);
+			return res;
+		}
+		
+	}
+
+	class Ctrl9 extends NaiveNetController{
+
+		public Ctrl9() {
+			super("quitchannel");
+		}
+
+		@Override
+		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+			Integer channelID = msg.channelid;
+			msg.user.channelPool.quitChannel(channelID);
+			return null;
+		}
+		
+	}
+	
+	class Ctrl10 extends NaiveNetController{
+
+		public Ctrl10() {
+			super("close");
+		}
+
+		@Override
+		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+			msg.user.onQuit();
+			return null;
 		}
 		
 	}

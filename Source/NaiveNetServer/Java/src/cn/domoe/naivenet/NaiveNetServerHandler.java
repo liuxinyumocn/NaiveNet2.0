@@ -2,10 +2,16 @@ package cn.domoe.naivenet;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 
 import cn.domoe.naivenet.Channel.NaiveNetChannelManager;
 import cn.domoe.naivenet.Config.NaiveNetConfig;
 import cn.domoe.naivenet.Server.NaiveServer;
+import cn.domoe.naivenet.User.CodeMap;
+import cn.domoe.naivenet.User.NaiveNetBox;
+import cn.domoe.naivenet.User.NaiveNetController;
+import cn.domoe.naivenet.User.NaiveNetMessage;
+import cn.domoe.naivenet.User.NaiveNetResponseData;
 import cn.domoe.naivenet.User.UserManager;
 
 public class NaiveNetServerHandler {
@@ -17,6 +23,7 @@ public class NaiveNetServerHandler {
 	public NaiveNetConfig config;
 	public NaiveNetChannelManager channelManager;
 	
+	private NaiveNetBox admin_box;
 	private Thread checkThread;
 	private int timeout = 5000;
 	
@@ -31,6 +38,45 @@ public class NaiveNetServerHandler {
 		//创建巡查线程触发器
 		checkThread = new Thread(new CheckThread());
 		checkThread.start();
+		
+		this.initAdminBox();
+	}
+	
+	public NaiveNetBox getAdminBox() {
+		return this.admin_box;
+	}
+	
+	private void initAdminBox() {
+		admin_box = new NaiveNetBox();
+		//获取当前的Channel配置
+		admin_box.addController(new NaiveNetController("getChannelConf") {
+
+			@Override
+			public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+				String json = config.getChannelConf();
+				return new NaiveNetResponseData(msg,json.getBytes(),true);
+			}
+			
+		});
+		
+		//设置当前的Channel配置
+		admin_box.addController(new NaiveNetController("setChannelConf") {
+
+			@Override
+			public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+				try {
+					String json = new String(msg.param,"utf-8");
+					config.setChannelInfo(json);
+				} catch (UnsupportedEncodingException e) {
+					return new NaiveNetResponseData(msg,CodeMap.DATA_FORMAT_ERROR,false);
+				} catch (Exception e) {
+					return new NaiveNetResponseData(msg,CodeMap.DATA_FORMAT_ERROR,false);
+				}
+				return new NaiveNetResponseData(msg,CodeMap.OK,true);
+			}
+			
+		});
+		
 	}
 	
 	private boolean checkstatus = true;

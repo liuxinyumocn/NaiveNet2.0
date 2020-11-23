@@ -24,9 +24,11 @@ public class NaiveNetChannelPool {
 		this.user = user;
 		this.channelManager = channelManager;
 		this.hashmapIDAndChannel = new ConcurrentHashMap<>();
+		this.hashmapChannelAndID = new ConcurrentHashMap<>();
 	}
 
 	private ConcurrentHashMap<Integer,Channel> hashmapIDAndChannel; //已经建立连接的Channel表
+	private ConcurrentHashMap<Channel,Integer> hashmapChannelAndID;	//已经建立连接的Channel表
 	
 	/**
 	 * 申请加入一个Channel
@@ -52,6 +54,7 @@ public class NaiveNetChannelPool {
 		try {
 			this.channelManager.connect(msg,channelName);
 		} catch (Exception e) {
+			e.printStackTrace();
 			NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.CANNOT_BE_ESTABLISHED,false);
 			this.user.responseClient(res);
 			return;
@@ -65,6 +68,7 @@ public class NaiveNetChannelPool {
 		String channelName = new String(nnm.param);
 		Integer channelid = channelManager.naiveNetServerHandler.config.getChannelInfo(channelName).id;
 		hashmapIDAndChannel.put(channelid, channel);
+		hashmapChannelAndID.put(channel, channelid);
 		NaiveNetResponseData res = new NaiveNetResponseData(nnm,CodeMap.OK,true);
 		this.user.responseClient(res);
 	}
@@ -124,6 +128,7 @@ public class NaiveNetChannelPool {
 		if(channel == null)
 			return;
 		this.hashmapIDAndChannel.remove(channelID);
+		this.hashmapChannelAndID.remove(channel);
 		try {
 			this.channelManager.closeChannel(channel);
 			channel.close().sync();
@@ -152,7 +157,6 @@ public class NaiveNetChannelPool {
 	 * 	客户端对NC的请求进行回复
 	 * */
 	public void responseClientToNC(NaiveNetMessage msg) {
-		System.out.println("回应NC"+msg.channelid);
 		Channel channel = this.hashmapIDAndChannel.get(msg.channelid);
 		if(channel == null) { //说明与NC已经断开连接无需回复
 			return;
@@ -160,6 +164,13 @@ public class NaiveNetChannelPool {
 		//Log.print(msg.data);
 		channel.writeAndFlush(msg.data);
 		
+	}
+
+	/**
+	 * 	提供Channel句柄给出ChannelID
+	 * */
+	public int getChannelID(Channel channel) {
+		return this.hashmapChannelAndID.get(channel);
 	}
 
 

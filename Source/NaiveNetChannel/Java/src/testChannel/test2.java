@@ -134,7 +134,7 @@ public class test2 {
 	public void launch() {
 		try {
 			naiveNetChannel.launch();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.out.println("NaiveNetChannel启动失败");
 			e.printStackTrace();
 		}

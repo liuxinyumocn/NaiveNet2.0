@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import io.netty.channel.Channel;
+
 /**
  *  NaiveNet User类 每一个User 实例将对应一个NaiveNetClient客户端句柄
  * */
 public class User {
 
-	private SocketChannel socketChannel;
+	private Channel socketChannel;
 	private UserManager userManager;
 	
 	private long start_timestamp = 0;
@@ -24,7 +26,7 @@ public class User {
 	private NaiveNetEvent onBreak = null;
 	private NaiveNetEvent onRecover = null;
 	
-	public User(SocketChannel sc,UserManager manager) {
+	public User(Channel sc,UserManager manager) {
 		this.socketChannel = sc;
 		this.userManager = manager;
 		dataqueue = new ConcurrentLinkedQueue<>();
@@ -48,11 +50,11 @@ public class User {
 	}
 	
 	/**
-	 * 	获得该用户的 {@link SocketChannel} 句柄，请注意，如果你不是NaiveNet源码的维护人员，
+	 * 	获得该用户的 {@link Channel} 句柄，请注意，如果你不是NaiveNet源码的维护人员，
 	 *  通常情况下不需要获取该句柄，甚至更不应该借助该句柄进行任何的I/O操作，使用该句柄将可能导
 	 *  致NaiveNet组件工作异常
 	 * */
-	public SocketChannel getSocketChannel() {
+	public Channel getSocketChannel() {
 		return this.socketChannel;
 	}
 
@@ -134,6 +136,7 @@ public class User {
 					return;
 				}
 			}
+			System.out.println(new String(data));
 			//身份合法
 			send("NAIVENETCHANNEL CODE[OK]".getBytes());
 			this.success();
@@ -167,6 +170,9 @@ public class User {
 		this.lastmsg_timestamp = System.currentTimeMillis();
 		NaiveNetUserMessage msg = new NaiveNetUserMessage(data,this);
 		
+		for(int i = 0;i<data.length;i++) {
+			System.out.print(data[i] + " ");
+		}
 		
 		if(msg.control == 1) {	//请求类型
 			if(msg.channelid == 0) { //来自NS的请求
@@ -419,28 +425,37 @@ public class User {
 	private ConcurrentLinkedQueue<NaiveNetRequestData> temp_msg_wt_list = new ConcurrentLinkedQueue<>();
 	private int temp_msg_id = 0;
 	private void genTempMsgId(NaiveNetRequestData data) {
-		boolean f = false;
-		if(temp_msg_id < 126) {
-			data.msgid = (byte)this.temp_msg_id;
-			temp_msg_list.put(new Integer(this.temp_msg_id), data);
-			this.temp_msg_id++;
-			f = true;
-		}else {
-			for(int i = 0;i <= 126 ;i++) {
-				if(this.temp_msg_list.get(i).finished) {
-					data.msgid = (byte)i;
-					this.temp_msg_list.replace(i, data);
-					f = true;
-					break;
-				}
+		boolean f = false; //寻找了 126个 均无法填入 则放入缓存队列
+		boolean n = false;
+		Integer id = 0;
+		for(int i = 0;i<126;i++) {
+			temp_msg_id++;
+			if(temp_msg_id >= 126)
+				temp_msg_id = 0;
+			NaiveNetRequestData old = this.temp_msg_list.get(temp_msg_id);
+			if(old == null) {
+				f = true;
+				n = true;
+				id = temp_msg_id;
+				break;
+			}
+			if(old.finished == false) {
+				f = true;
+				id = temp_msg_id;
+				break;
 			}
 		}
+		
 		if(!f) {
 			this.temp_msg_wt_list.add(data);
 			return;
 		}
-		//System.out.println("Request 打印：");
-		//Log.print(data.genData());
+		data.msgid = (byte)(int)id;
+		if(n)
+			this.temp_msg_list.put(id, data);
+		else
+			this.temp_msg_list.replace(id, data);
+		
 		this.send(data.genData());
 	}
 	
@@ -467,20 +482,51 @@ public class User {
 	
 	/**
 	 * 	获取用户的连接信息
-	 * 	当前版本可获得 需要使用 NaiveNetLinkInfo 解包获得具体信息
-	 * 		用户的IP地址
-	 * 		连接源
-	 * 		开始连接时间
+	 * 	当前版本可获得 需要使用 NaiveNetLinkInfo 解包获得具体信息以JSON字符串的字节集返回
+	 * 	得到的回调中需要 
+	 * 	String info_json = new String( data );
+	 * 	info_json 中包括的字段有：
+	 * 		ip String 用户的IP地址
+	 * 		starttimestamp long 该用户首次连接时间戳
 	 * */
-//	public void getLinkInfo(NaiveNetOnResponse response) {
-//		NaiveNetRequestData req = new NaiveNetRequestData(
-//				NaiveNetRequestData.TO_NAIVENET_SERVER,
-//				"getsession",
-//				new byte[0] ,
-//				response
-//			);
-//		this.genTempMsgId(req);
-//	}
+	public void getLinkInfo(NaiveNetOnResponse response) {
+		NaiveNetRequestData req = new NaiveNetRequestData(
+				NaiveNetRequestData.TO_NAIVENET_SERVER,
+				"getlinkinfo",
+				new byte[0] ,
+				response
+			);
+		this.genTempMsgId(req);
+	}
+	
+	/**
+	 * 	让NS断开与当前NC的会话
+	 * 	Client侧无感知，当Client需要进入时会再次发生 onNewUser 事件回调重新建立连接
+	 * */
+	public void quitChannel(NaiveNetOnResponse response) {
+		NaiveNetRequestData req = new NaiveNetRequestData(
+				NaiveNetRequestData.TO_NAIVENET_SERVER,
+				"quitchannel",
+				new byte[0] ,
+				response
+			);
+		this.genTempMsgId(req);
+		
+	}
+	
+	/**
+	 * 	让NS强制关闭用户会话
+	 * 	注意该动作将导致Client侧网络直接发生断开，并且无法恢复，所有与NS相关的NC也都会退出该用户的句柄
+	 * */
+	public void close(NaiveNetOnResponse response) {
+		NaiveNetRequestData req = new NaiveNetRequestData(
+				NaiveNetRequestData.TO_NAIVENET_SERVER,
+				"close",
+				new byte[0] ,
+				response
+			);
+		this.genTempMsgId(req);
+	}
 	
 	
 	/**

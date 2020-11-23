@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+
 class UserManager {
 	
 	private NaiveNetEvent onNewUser = null;
@@ -24,7 +27,7 @@ class UserManager {
 		return token;
 	}
 	
-	public User createUser(SocketChannel sc) {
+	public User createUser(Channel sc) {
 		User user = new User(sc,this);
 		this.unlog.add(user);
 		return user;
@@ -82,7 +85,7 @@ class UserManager {
 	private boolean sending = false;
 	public NaiveNetChannelServer naiveNetChannelServer;
 	
-	public void pushUserMessage(SocketChannel socketChannel, byte[] data) {
+	public void pushUserMessage(Channel socketChannel, byte[] data) {
 		this.msgqueueToNS.add(new Msg(socketChannel,data));
 		if(sending) {
 			return;
@@ -92,10 +95,10 @@ class UserManager {
 	}
 	
 	class Msg {
-		public SocketChannel socketChannel; 
+		public Channel socketChannel; 
 		public byte[] data;
-		public Msg(SocketChannel socketChannel, byte[] data) {
-			this.socketChannel = socketChannel;
+		public Msg(Channel socketChannel2, byte[] data) {
+			this.socketChannel = socketChannel2;
 			this.data = data;
 		}
 		
@@ -114,15 +117,11 @@ class UserManager {
 				}
 				//发送数据前需要对数据装箱
 				byte[] header = UserManager.calNumber(msg.data.length);
-				ByteBuffer buf = ByteBuffer.allocate(msg.data.length + header.length);
-				buf.put(header);
-				buf.put(msg.data);
-				buf.flip();
-				try {
-					msg.socketChannel.write(buf);
-				} catch (IOException e) {
-					
-				}
+				ByteBuf buf = msg.socketChannel.alloc().buffer();
+				buf.writeBytes(header);
+				buf.writeBytes(msg.data);
+				msg.socketChannel.writeAndFlush(buf);
+				
 				
 			}
 			
@@ -173,7 +172,7 @@ class UserManager {
 		try {
 			this.users.remove(user);
 			this.unlog.remove(user);
-			SocketChannel channel = user.getSocketChannel();
+			Channel channel = user.getSocketChannel();
 			this.naiveNetChannelServer.close(user);
 			channel.close();
 		}catch(Exception e) {

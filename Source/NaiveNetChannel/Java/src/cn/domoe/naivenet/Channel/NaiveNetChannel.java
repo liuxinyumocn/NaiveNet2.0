@@ -28,7 +28,7 @@ public class NaiveNetChannel {
 	/**
 	 * 	以默认配置下启动NaiveNetChannel
 	 * */
-	public void launch() throws IOException {
+	public void launch() throws Exception {
 		this.launch(-1);
 	}
 
@@ -36,7 +36,7 @@ public class NaiveNetChannel {
 	 * 	启动NaiveNetChannel
 	 * 	并规定并发处理线程数量
 	 * */
-	public void launch(int MAX_THREAD) throws IOException {
+	public void launch(int MAX_THREAD) throws Exception {
 		this.naiveNetChannelServer.launch(MAX_THREAD);
 	}
 	

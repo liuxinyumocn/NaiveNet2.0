@@ -1,5 +1,7 @@
 package cn.domoe.naivenet.Config;
 
+import java.util.Collection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,5 +41,16 @@ public class ChannelInfo {
 	}
 	public int getPort() {
 		return port;
+	}
+
+	public JSONObject getJSON() throws JSONException {
+		JSONObject ob = new JSONObject();
+		ob.put("name", this.getName());
+		ob.put("ip", this.getIP());
+		ob.put("port", this.getPort());
+		ob.put("token", this.getToken());
+		ob.put("auth", this.getAuth());
+		
+		return ob;
 	}
 }
