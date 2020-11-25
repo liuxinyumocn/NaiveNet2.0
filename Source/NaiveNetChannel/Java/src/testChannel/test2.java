@@ -128,7 +128,7 @@ public class test2 {
 	public static void main(String[] args) {
 		//System.out.println("["+new String(new byte[] {104, 101, 97, 114, 116, 0})+"]");
 		
-		new testChannel().launch();
+		//new testChannel().launch();
 	}
 
 	public void launch() {

@@ -97,7 +97,7 @@ public class UserManager {
 				return new NaiveNetResponseData(msg,CodeMap.DATA_FORMAT_ERROR,false);
 			}
 			
-			if(Math.abs(System.currentTimeMillis() - timestamp) > 1000 * 30) {
+			if(Math.abs(System.currentTimeMillis() - timestamp) > 1000 * 30 || UserManager.this.naiveNetServer.config.getConf("SECRET").getStr().length() == 0) {
 				return new NaiveNetResponseData(msg,CodeMap.PERMISSION_DENIED,false);
 			}
 			if(nonceStr.length() < 6) {
