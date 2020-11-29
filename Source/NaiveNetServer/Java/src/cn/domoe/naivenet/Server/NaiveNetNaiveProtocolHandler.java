@@ -13,7 +13,7 @@ public class NaiveNetNaiveProtocolHandler extends ChannelInboundHandlerAdapter{
 		byte[] data = new byte[buf.readableBytes()];
 		buf.readBytes(data);
 		System.out.println(new String(data));
-		
+		buf.release();
 //		User user = userManager.FindUser(ctx.channel());
 //		if(user != null)
 //			user.InCounter(((ByteBuf)msg).readableBytes());

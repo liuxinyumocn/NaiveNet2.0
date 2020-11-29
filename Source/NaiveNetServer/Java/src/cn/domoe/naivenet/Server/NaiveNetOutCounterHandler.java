@@ -23,7 +23,7 @@ public class NaiveNetOutCounterHandler extends ChannelOutboundHandlerAdapter{
 		User user = userManager.FindUser(ctx.channel());
 		if(user != null)
 			user.OutCounter(((ByteBuf)msg).readableBytes());
-		ctx.write(msg,promise);
+		ctx.writeAndFlush(msg,promise);
 	}
 	
 }

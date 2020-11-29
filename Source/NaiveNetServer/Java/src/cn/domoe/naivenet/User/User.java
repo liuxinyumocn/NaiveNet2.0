@@ -260,7 +260,7 @@ public class User {
 	 * */
 	private ConcurrentHashMap<String,byte[]> sessionStore = null;
 	public void setSession(String key,byte[] value) {
-		System.out.println(key);
+		//System.out.println(key);
 		//Log.print(value);
 		sessionStore.put(key, value);
 	}

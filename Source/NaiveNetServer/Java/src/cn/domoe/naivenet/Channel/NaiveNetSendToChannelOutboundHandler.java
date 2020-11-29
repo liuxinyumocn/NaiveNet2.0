@@ -10,7 +10,7 @@ public class NaiveNetSendToChannelOutboundHandler extends ChannelOutboundHandler
 	@Override
 	public void write(ChannelHandlerContext ctx ,Object msg,ChannelPromise promise) throws Exception {
 		//准备向NC发送数据 Object msg 需要提供 NaiveNetMessage
-		ctx.write(msg,promise);
+		ctx.writeAndFlush(msg,promise);
 	
 	}
 	

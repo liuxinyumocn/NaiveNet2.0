@@ -23,7 +23,7 @@ public class NaiveNetBinaryWebSocketFrameHandler extends SimpleChannelInboundHan
 		User user = userManager.FindUser(ctx.channel());
 		if(user != null)
 			user.onMessage(data);
-
+		buf.release();
 	}
 	
 	 @Override
