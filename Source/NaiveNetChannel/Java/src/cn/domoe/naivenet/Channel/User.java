@@ -136,7 +136,7 @@ public class User {
 					return;
 				}
 			}
-			System.out.println(new String(data));
+			//System.out.println(new String(data));
 			//身份合法
 			send("NAIVENETCHANNEL CODE[OK]".getBytes());
 			this.success();
@@ -169,10 +169,6 @@ public class User {
 	private void parseMsg(byte[] data) {
 		this.lastmsg_timestamp = System.currentTimeMillis();
 		NaiveNetUserMessage msg = new NaiveNetUserMessage(data,this);
-		
-		for(int i = 0;i<data.length;i++) {
-			System.out.print(data[i] + " ");
-		}
 		
 		if(msg.control == 1) {	//请求类型
 			if(msg.channelid == 0) { //来自NS的请求

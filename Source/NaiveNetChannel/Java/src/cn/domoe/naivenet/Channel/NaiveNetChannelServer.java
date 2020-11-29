@@ -100,7 +100,7 @@ class NaiveNetChannelServer {
 			buf.readBytes(data);
 	    	User user = hashmapSocketChannelAndUser.get(ctx.channel());
 	    	userManger.onRead(user,data);
-			
+			buf.release();
 		}
 		
 		
