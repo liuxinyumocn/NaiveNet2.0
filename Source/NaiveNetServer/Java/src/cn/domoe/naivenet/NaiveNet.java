@@ -1,9 +1,12 @@
 package cn.domoe.naivenet;
 
+import io.netty.util.ResourceLeakDetector;
+
 public class NaiveNet {
 	
 	private NaiveNetServerHandler server;
 	public NaiveNet() throws Exception {
+//		ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
 		server = new NaiveNetServerHandler();
 	}
 	

@@ -179,6 +179,8 @@ public class UserManager {
 
 		@Override
 		public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
+			//System.out.println("申请进入"+new String(msg.param));
+			
 			User user = msg.user;
 			user.enterChannel(msg);
 			NaiveNetResponseData res = new NaiveNetResponseData();

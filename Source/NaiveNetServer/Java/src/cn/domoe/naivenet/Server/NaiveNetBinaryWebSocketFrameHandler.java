@@ -21,9 +21,9 @@ public class NaiveNetBinaryWebSocketFrameHandler extends SimpleChannelInboundHan
 		byte[] data = new byte[buf.readableBytes()];
 		buf.readBytes(data);
 		User user = userManager.FindUser(ctx.channel());
+		//buf.release();
 		if(user != null)
 			user.onMessage(data);
-		buf.release();
 	}
 	
 	 @Override

@@ -1,1 +1,0 @@
-[{"port":8001,"auth":false,"ip":"127.0.0.1","name":"gobang_auth","token":"abcdefg"},{"port":8002,"auth":true,"ip":"127.0.0.1","name":"gobang_match","token":"abcdefg"},{"port":8003,"auth":true,"ip":"127.0.0.1","name":"gobang_war","token":"abcdefg"}]

@@ -424,18 +424,18 @@ public class User {
 		boolean f = false; //寻找了 126个 均无法填入 则放入缓存队列
 		boolean n = false;
 		Integer id = 0;
-		for(int i = 0;i<126;i++) {
+		for(int i = 0;i < 126;i++) {
 			temp_msg_id++;
-			if(temp_msg_id >= 126)
+			if(temp_msg_id > 125)
 				temp_msg_id = 0;
 			NaiveNetRequestData old = this.temp_msg_list.get(temp_msg_id);
 			if(old == null) {
-				f = true;
-				n = true;
+				f = true;	//没找到
+				n = true;	//是新的
 				id = temp_msg_id;
 				break;
 			}
-			if(old.finished == false) {
+			if(old.finished == true) {
 				f = true;
 				id = temp_msg_id;
 				break;
@@ -451,7 +451,7 @@ public class User {
 			this.temp_msg_list.put(id, data);
 		else
 			this.temp_msg_list.replace(id, data);
-		
+		//System.out.println(data.msgid);
 		this.send(data.genData());
 	}
 	

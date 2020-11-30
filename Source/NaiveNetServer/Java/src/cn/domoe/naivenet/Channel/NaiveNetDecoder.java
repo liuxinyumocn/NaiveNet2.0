@@ -35,9 +35,10 @@ public class NaiveNetDecoder extends ByteToMessageDecoder {
 			return;
 		}
 		//读取的长度为 index + value
-		in.readBytes(index);
+		in.readBytes(index).release();
 		data = new byte[value];
 		in.readBytes(data);
+		
 		out.add(data);
 	}
 	

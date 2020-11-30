@@ -16,7 +16,7 @@ import cn.domoe.naivenet.User.UserManager;
 
 public class NaiveNetServerHandler {
 
-	private final String version = "2.0.0";
+	private final String version = "2.1.0";
 	
 	public UserManager userManager;
 	public NaiveServer naiveServer;
