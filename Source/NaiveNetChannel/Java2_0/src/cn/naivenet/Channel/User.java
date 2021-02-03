@@ -25,8 +25,11 @@ public class User {
 	}
 	
 	static {
+		User.NSBOXs = new ArrayList<>();
 		NaiveNetBox box = new NaiveNetBox();
-		
+		box.addController(new CtrlOnBreak());
+		box.addController(new CtrlOnQuit());
+		box.addController(new CtrlOnRecover());
 		User.AddNSBox(box);
 	}
 
@@ -52,7 +55,6 @@ public class User {
 			public void on(ClientHandler handler, byte[] data) {
 				
 				NaiveNetUserMessage msg = new NaiveNetUserMessage(data,User.this);
-				
 				if(msg.control == 1) { //请求
 					if(msg.channelid == 0) { //NS
 						dealNSToNC(msg);
@@ -134,7 +136,7 @@ public class User {
 	public static void RemoveBox(NaiveNetBox box) {
 		BOXs.remove(box);
 	}
-	private static List<NaiveNetBox> NSBOXs = new ArrayList<>();
+	private static List<NaiveNetBox> NSBOXs;
 	private static void AddNSBox(NaiveNetBox mod) {
 		NSBOXs.add(mod);
 	}
@@ -195,7 +197,7 @@ public class User {
 	}
 	
 	private void send(byte[] data) {
-		
+		this.clientHandler.send(data);
 	}
 	
 	/**

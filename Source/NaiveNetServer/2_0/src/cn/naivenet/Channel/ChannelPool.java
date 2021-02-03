@@ -24,6 +24,8 @@ public class ChannelPool {
 	public ChannelPool(ChannelManager channelManager, User user) {
 		this.channelManager = channelManager;
 		this.user = user;
+		this.hashmapChannelAndID = new ConcurrentHashMap<>();
+		this.hashmapIDAndChannel = new ConcurrentHashMap<>();
 		this.initEvent();
 	}
 	
@@ -62,23 +64,22 @@ public class ChannelPool {
 			this.user.responseClient(res);
 			return;
 		}
-		
+
 		try {
 			ChannelHandler ch = this.channelManager.connect(msg,channelName);
 			if(ch == null)
 				return;
 			//注册相关的回调事件
+			//System.out.println("添加");
 			this.hashmapChannelAndID.put(ch, id);
 			this.hashmapIDAndChannel.put(id, ch);
 			this.registerEvent(ch);
-			
+
 		}catch(Exception e) {
 			NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.CANNOT_BE_ESTABLISHED,false);
 			this.user.responseClient(res);
 			return;
 		}
-		
-		
 	}
 
 	/**
@@ -91,6 +92,7 @@ public class ChannelPool {
 			public void on(ChannelHandler handler, byte[] data) {
 				//频道连接断开
 				Integer id = hashmapChannelAndID.get(handler);
+				//System.out.println("移除");
 				hashmapChannelAndID.remove(handler);
 				hashmapIDAndChannel.remove(id);
 				
@@ -161,7 +163,7 @@ public class ChannelPool {
 		ch.setOnCloseListener(onClose);
 		ch.setOnReadListener(onRead);
 		ch.setOnUnAuthListener(onUnAuth);
-		ch.setOnUnAuthListener(onAuth);
+		ch.setOnAuthListener(onAuth);
 		
 	}
 
@@ -170,11 +172,13 @@ public class ChannelPool {
 	 * */
 	public void dealClientToNC(NaiveNetUserMessage msg) {
 		ChannelHandler ch = this.hashmapIDAndChannel.get(msg.channelid);
+		//System.out.println(this.hashmapIDAndChannel.size());
 		if(ch == null) {
 			NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.CHANNEL_NOT_ESTABLISHED_WITH_SERVER,false);
 			msg.user.responseClient(res);
 			return;
 		}
+		//System.out.println(this.hashmapIDAndChannel.size());
 		ch.send(msg.data);
 		
 	}
@@ -191,7 +195,7 @@ public class ChannelPool {
 	 * 	广播给所有已经建立连接的NC消息
 	 * */
 	private void notifyChannels(byte[] data) {
-		Iterator it = this.hashmapChannelAndID.entrySet().iterator();
+		Iterator it = this.hashmapIDAndChannel.entrySet().iterator();
 		while(it.hasNext()) {
 			Map.Entry e = (Map.Entry)it.next();
 			ChannelHandler ch = (ChannelHandler)e.getValue();
@@ -212,5 +216,20 @@ public class ChannelPool {
 	 * */
 	public int getChannelID(ChannelHandler channel) {
 		return this.hashmapChannelAndID.get(channel);
+	}
+
+	/**
+	 * 	退出所有的Channel
+	 * */
+	public void quitAll() {
+		Iterator it = this.hashmapIDAndChannel.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry e = (Map.Entry)it.next();
+			ChannelHandler ch = (ChannelHandler)e.getValue();
+			try {
+				ch.close();
+			} catch (Exception e1) {
+			}
+		}
 	}
 }

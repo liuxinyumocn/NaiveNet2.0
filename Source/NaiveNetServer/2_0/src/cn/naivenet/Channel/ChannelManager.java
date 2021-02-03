@@ -42,6 +42,7 @@ public class ChannelManager {
 		group = new NioEventLoopGroup();
 		boot = new Bootstrap();
 		channelList = new ConcurrentLinkedDeque<>();
+		hashmap = new ConcurrentHashMap<>();
 		
 		this.initController();
 		this.init();
@@ -58,15 +59,16 @@ public class ChannelManager {
 
 				@Override
 				protected void initChannel(SocketChannel ch) throws Exception {
+
 					
-					Channel c = ch;
-					ChannelHandler chd = hashmap.get(c);
-					hashmap.remove(c);
+					ChannelHandler handler = new ChannelHandler(ch);
+					channelList.add(handler);
+					hashmap.put(handler.getChannel(), handler);
 					
 					ChannelPipeline pipeline = ch.pipeline();
 					pipeline.addLast(new NaiveNetDecoder());
 					pipeline.addLast(new NaiveNetEncoder());
-					pipeline.addLast(new NettyHandler_ChannelAuth(chd,ChannelManager.this));
+					pipeline.addLast(new NettyHandler_ChannelAuth(handler,ChannelManager.this));
 					
 				}
 				
@@ -98,9 +100,15 @@ public class ChannelManager {
 		}
 		ChannelFuture cf = boot.connect(info.getIP(),info.getPort()).sync();
 		//连接建立成功
-		ChannelHandler handler = new ChannelHandler(cf.channel(),msg);
-		channelList.add(handler);
-		hashmap.put(handler.getChannel(), handler);
+		Channel c = cf.channel();
+		ChannelHandler handler = this.hashmap.get(c);
+		this.hashmap.remove(c);
+		handler.setMsg(msg);
+		
+		//立即发送验证消息
+		String content = "NAIVENETCHANNEL TOKEN["+info.getToken()+"]";
+		handler.send(content.getBytes());
+		
 		return handler;
 	}
 	

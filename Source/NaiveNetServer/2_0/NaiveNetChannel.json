@@ -26,13 +26,13 @@
 		"name":"auth",
 		"ip":"127.0.0.1",
 		"port":5000,
-		"token":"abc",
+		"token":"abcd",
 		"auth":false
 	},{
 		"name":"play",
 		"ip":"127.0.0.1",
 		"port":5001,
-		"token":"abc",
+		"token":"abcd",
 		"auth":true
 	}
 ]

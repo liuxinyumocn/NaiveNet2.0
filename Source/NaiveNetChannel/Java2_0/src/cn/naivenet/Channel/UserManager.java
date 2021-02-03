@@ -17,7 +17,8 @@ class UserManager {
 	public void createUser(ClientHandler handler) {
 		User user = new User(handler,this);
 		userList.add(user);
-		
+		if(this.onNewUser != null)
+			this.onNewUser.on(user, null);
 	}
 
 	private NaiveNetEvent onNewUser;

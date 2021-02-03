@@ -63,6 +63,7 @@ public class NaiveNetChannelServer {
 
 		@Override
 		protected void initChannel(SocketChannel ch) throws Exception {
+			
 			ClientHandler client = new ClientHandler(ch,NaiveNetChannelServer.this);
 			clientList.add(client);
 			

@@ -66,6 +66,9 @@ public class ClientHandler {
 	 * 	通信发生关闭
 	 * */
 	public void _onClose() {
+		if(timeoutTimertask != null) {
+			Timer.CancelTask(timeoutTimertask);
+		}
 		this.pool._onClientClose(this);
 		if(this.onClose != null)
 			this.onClose.on(this, null);
@@ -131,6 +134,7 @@ public class ClientHandler {
 			public void Event() {
 				//数据超时
 				timeoutTimertask = null;
+				System.out.println("Client Handler timeout");
 				close();
 			}
 			

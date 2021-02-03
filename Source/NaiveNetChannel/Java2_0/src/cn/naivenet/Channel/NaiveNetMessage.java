@@ -22,4 +22,26 @@ public abstract class NaiveNetMessage {
 	public NaiveNetResponse getResponseHandler() {
 		return new NaiveNetResponse(this);
 	}
+
+	/**
+	 * 	获得用于回应的 {@link NaiveNetResponse} 句柄，并直接设置回应正文，正文可以是 byte[] 也可以是 String
+	 * 	res = msg.getResponseHandler()
+	 * 	return res
+	 * */
+	public NaiveNetResponse getResponseHandler(byte[] content) {
+		NaiveNetResponse res = this.getResponseHandler();
+		res.setContent(content);
+		return res;
+	}
+
+	/**
+	 * 	获得用于回应的 {@link NaiveNetResponse} 句柄，并直接设置回应正文，正文可以是 byte[] 也可以是 String
+	 * 	res = msg.getResponseHandler()
+	 * 	return res
+	 * */
+	public NaiveNetResponse getResponseHandler(String content) {
+		NaiveNetResponse res = this.getResponseHandler();
+		res.setContent(content);
+		return res;
+	}
 }

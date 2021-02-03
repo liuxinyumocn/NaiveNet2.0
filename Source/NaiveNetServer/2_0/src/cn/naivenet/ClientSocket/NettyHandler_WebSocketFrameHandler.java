@@ -15,6 +15,7 @@ public class NettyHandler_WebSocketFrameHandler extends SimpleChannelInboundHand
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		System.out.println("断线了");
 		this.client._onClose();
 	}
 
@@ -31,6 +32,7 @@ public class NettyHandler_WebSocketFrameHandler extends SimpleChannelInboundHand
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		//通信句柄发生异常，Pool回收通信句柄，并将异常向外传播
+		cause.printStackTrace();
 		ctx.close();
 		this.client._onExceptionCaught(cause);
 	}

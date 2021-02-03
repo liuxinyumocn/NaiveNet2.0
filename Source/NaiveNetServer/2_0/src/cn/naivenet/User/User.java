@@ -130,7 +130,6 @@ public class User {
 					if (level == 0) {
 						//超时自动断线
 						
-						System.out.println("超时了");
 						clientHandler.close();
 					}
 				}
@@ -192,6 +191,8 @@ public class User {
 		for(int i=0;i<User.BOXs.size();i++) {
 			res = User.BOXs.get(i).deal((NaiveNetMessage)msg);
 			if(res != null) {
+				System.out.println(this);
+				System.out.println(msg.controller);
 				this.responseClient(res);
 				return;
 			}
@@ -209,7 +210,8 @@ public class User {
 		if(data.getCancel())
 			return;
 		byte[] _data = data.genData();
-		this.clientHandler.send(_data);
+		if(this.clientHandler != null)
+			this.clientHandler.send(_data);
 	}
 	
 	private String ping = "0";
@@ -237,10 +239,21 @@ public class User {
 			return;
 		this.sessionid = this.userManager.authUser(this);
 		this.level = 1;
-		
-		
+		this.requestNSToClient("auth",this.sessionid.getBytes());
 	}
 	
+	/**
+	 * 	NS向Client发起请求
+	 * */
+	private void requestNSToClient(String controller, byte[] bytes) {
+		NaiveNetRequestData req = new NaiveNetRequestData(
+				1,0,0,controller,bytes
+				);
+		byte[] _data = req.genData();
+		if(this.clientHandler != null)
+			this.clientHandler.send(_data);
+	}
+
 	/**
 	 * 	返回授权状态
 	 * 	@return boolean true 授权成功 false 未授权
@@ -264,6 +277,7 @@ public class User {
 		if(this.clientHandler != null)
 			this.clientHandler.close();
 		this.userManager.removeUser(this);
+		this.channelPool.quitAll();
 	}
 
 	/**
@@ -286,16 +300,22 @@ public class User {
 	 * 	恢复网络通信句柄
 	 * */
 	public void recoverChannelHandler(NaiveNetMessage msg) {
+		//this是旧的User，msg.user 是新的user 
+		System.out.println("old");
+		System.out.println(this);
+		System.out.println(msg.user);
 		if(this.timertask_quit != null){
 			Timer.CancelTask(this.timertask_quit);
 			this.timertask_quit = null;
 		}
 		this.closeClientHandler();
+		
 		ClientHandler newHandler = msg.user.clientHandler;
 		this.clientHandler = newHandler;
 		this._initEvent();
 		//新的User将被回收
 		msg.user.release();
+		
 		this.channelPool.onUserRecover();
 	}
 
@@ -320,10 +340,14 @@ public class User {
 	 * 	回收当前User 通常在恢复状态时，新的User中的ClientHandler被移至旧的User，新User需要释放
 	 * */
 	public void release() {
-		if(this.clientHandler != null) {
-			this.removeEvent();
-			this.clientHandler = null;
+		if(this.timertask_auth != null) {
+			Timer.CancelTask(this.timertask_auth);
 		}
+		if(this.timertask_quit != null) {
+			Timer.CancelTask(this.timertask_quit);
+		}
+		
+		this.clientHandler = null;
 		this.quit();
 	}
 

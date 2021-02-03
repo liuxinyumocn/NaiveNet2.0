@@ -3,7 +3,9 @@ package cn.naivenet.Channel;
 import cn.naivenet.TimerEvent.Task;
 import cn.naivenet.TimerEvent.Timer;
 import cn.naivenet.TimerEvent.TimerTask;
+import cn.naivenet.User.CodeMap;
 import cn.naivenet.User.NaiveNetMessage;
+import cn.naivenet.User.NaiveNetResponseData;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.SocketChannel;
 
@@ -18,9 +20,8 @@ public class ChannelHandler {
 	private byte level = 0;	//0 未认证 1 认证
 	private NaiveNetMessage msg;
 	
-	public ChannelHandler(Channel channel, NaiveNetMessage msg) {
+	public ChannelHandler(Channel channel) {
 		this.channel = channel;
-		this.msg = msg;
 		this.initCheck();
 	}
 
@@ -150,6 +151,9 @@ public class ChannelHandler {
 		this.level = 1;
 		if(authtimer != null)
 			Timer.CancelTask(authtimer);
+		//回应客户端
+		NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.OK,true);
+		msg.user.responseClient(res);
 	}
 
 	/**
@@ -157,6 +161,10 @@ public class ChannelHandler {
 	 * */
 	public void send(byte[] data) {
 		this.channel.writeAndFlush(data);
+	}
+
+	public void setMsg(NaiveNetMessage msg2) {
+		this.msg = msg2;
 	}
 	
 }
