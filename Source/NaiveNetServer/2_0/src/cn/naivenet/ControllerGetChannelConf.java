@@ -5,7 +5,7 @@ import cn.naivenet.User.NaiveNetController;
 import cn.naivenet.User.NaiveNetMessage;
 import cn.naivenet.User.NaiveNetResponseData;
 
-public class ControllerGetChannelConf extends NaiveNetController{
+class ControllerGetChannelConf extends NaiveNetController{
 
 	private NaiveNetConfig config;
 	

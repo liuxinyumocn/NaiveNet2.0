@@ -1,5 +1,8 @@
 package cn.naivenet.ClientSocket;
 
+import cn.naivenet.TimerEvent.Task;
+import cn.naivenet.TimerEvent.Timer;
+import cn.naivenet.TimerEvent.TimerTask;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.socket.SocketChannel;
@@ -17,8 +20,10 @@ public class ClientHandler {
 	public ClientHandler(SocketChannel channel,ClientConnPool pool) {
 		this.channel = channel;
 		this.pool = pool;
+		
+		this.resetTimeOutCheck();
 	}
-	
+
 	private ClientSocketEvent onRead;				//当该通信句柄有数据抵达时
 	private ClientSocketEvent onClose;				//当该通信关闭时
 	private ClientSocketEvent onExceptionCaught;	//当该通信发生异常时
@@ -52,6 +57,7 @@ public class ClientHandler {
 	 * 	新数据抵达
 	 * */
 	public void _onRead(byte[] data) {
+		this.resetTimeOutCheck();
 		if(onRead != null)
 			this.onRead.on(this,data);
 	}
@@ -106,5 +112,35 @@ public class ClientHandler {
 		future.addListener(ChannelFutureListener.CLOSE);
 	}
 
+	
+	private Task timeoutTimertask;
+	
+	/**
+	 * 	超时检测器
+	 * 	当超过特定时间客户端与服务器没有产生通信，则判定客户端发生离线
+	 * */
+	private void resetTimeOutCheck() {
 
+		if(timeoutTimertask != null) {
+			Timer.CancelTask(timeoutTimertask);
+		}
+		
+		timeoutTimertask = Timer.SetTimeOut(new TimerTask() {
+
+			@Override
+			public void Event() {
+				//数据超时
+				timeoutTimertask = null;
+				close();
+			}
+			
+		}, this.pool.getTimeOutBreak());
+	}
+
+	/**
+	 * 	获取原始通信句柄
+	 * */
+	public SocketChannel getChannel() {
+		return this.channel;
+	}
 }

@@ -1,7 +1,5 @@
 package cn.naivenet.Channel;
 
-import java.nio.channels.Channel;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
@@ -28,10 +26,11 @@ public class NettyHandler_ChannelAuth extends ChannelInboundHandlerAdapter {
 		byte[] data = (byte[])msg;
 		String response = new String(data);
 		if(response.equals("NAIVENETCHANNEL CODE[OK]")) { //回应正确
+			//通知用户
+			channelHandler._onAuthChannel();
 			ChannelPipeline pip = ctx.channel().pipeline();
 			pip.remove(this);
 			pip.addLast(new NettyHandler_ChannelDeal(this.channelHandler,this.channelManager));
-			
 		}else { //回应不正确
 			ctx.close();
 		}

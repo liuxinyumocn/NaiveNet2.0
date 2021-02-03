@@ -1,13 +1,17 @@
 package cn.naivenet.Channel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import cn.naivenet.NaiveNetServerHandler;
 import cn.naivenet.Config.ChannelInfo;
 import cn.naivenet.User.CodeMap;
+import cn.naivenet.User.NaiveNetBox;
 import cn.naivenet.User.NaiveNetMessage;
 import cn.naivenet.User.NaiveNetResponseData;
+import cn.naivenet.User.NaiveNetUserMessage;
 import cn.naivenet.User.User;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,6 +43,7 @@ public class ChannelManager {
 		boot = new Bootstrap();
 		channelList = new ConcurrentLinkedDeque<>();
 		
+		this.initController();
 		this.init();
 	}
 
@@ -107,4 +112,55 @@ public class ChannelManager {
 		this.channelList.remove(channelHandler);
 	}
 
+	/**
+	 * 	处理从NC请求NS的消息
+	 * */
+	public void dealNCToNS(NaiveNetUserMessage msg, ChannelHandler handler) {
+		NaiveNetResponseData res = null;
+		for(int i = 0;i<this.boxs.size();i++) {
+			res = this.boxs.get(i).deal(msg);
+			if(res != null) {
+				this.responseNC(res,handler);
+				return;
+			}
+		}
+		//未发现控制器
+		NaiveNetResponseData nrd = new NaiveNetResponseData(msg,CodeMap.NOT_FOUNTD_CONTROLLER,false);
+		this.responseNC(nrd,handler);
+	}
+	
+	/**
+	 * 	对Channel发来的请求进行回复
+	 * */
+	private void responseNC(NaiveNetResponseData res,ChannelHandler ch) {
+		if(res.getCancel())
+			return;
+		ch.send(res.genData());
+	}
+
+	/**
+	 * 	初始化Controller
+	 * */
+	private void initController() {
+		NaiveNetBox box = new NaiveNetBox();
+		box.addController(new Controller_auth());
+		box.addController(new Controller_clearsession());
+		box.addController(new Controller_close());
+		box.addController(new Controller_getlinkinfo());
+		box.addController(new Controller_getsession());
+		box.addController(new Controller_linkinfo());
+		box.addController(new Controller_ping());
+		box.addController(new Controller_quitchannel());
+		box.addController(new Controller_setsession());
+		this.addBox(box);
+	}
+	
+	private List<NaiveNetBox> boxs = new ArrayList<>();
+	public void addBox(NaiveNetBox mod) {
+		boxs.add(mod);
+	}
+	public void removeBox(NaiveNetBox mod) {
+		boxs.remove(mod);
+	}
+	
 }

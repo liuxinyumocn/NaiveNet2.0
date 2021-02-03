@@ -14,6 +14,8 @@ public class UserManager {
 	private ConcurrentLinkedDeque<User> userpool;				//用户句柄池（包括授权用户与未授权用户）
 	//private ConcurrentHashMap<ClientHandler,User> channelAndUserMap;  //网络句柄与用户句柄的映射
 	
+	private int timeout_quit = 60000*10;
+	
 	public UserManager(NaiveNetServerHandler s) {
 		this.naiveNetServer = s;
 		this.userpool = new ConcurrentLinkedDeque<>();
@@ -42,7 +44,7 @@ public class UserManager {
 		box.addController(new ControllerEnterChannel());
 		box.addController(new ControllerQuitChannel());
 		box.addController(new ControllerClose());
-		box.addController(new ControllerRecover());
+		box.addController(new ControllerRecover(this));
 		box.addController(new ControllerHeart());
 		box.addController(new ControllerAdmin(this.naiveNetServer));
 		User.AddBox(box);	
@@ -100,6 +102,30 @@ public class UserManager {
 		this.cancelAuthUser(user);
 		return this.userpool.remove(user);
 	}
+
+	/**
+	 * 	SESSIONID
+	 * 	@param token
+	 * */
+	public User getUserBySESSION(String token) {
+		User user = this.logedUsers.get(token);
+		return user;
+	}
+	
+	/**
+	 * 	获取退出超时时间
+	 * */
+	public int getTimeOutQuit() {
+		return this.timeout_quit;
+	}
+
+	/**
+	 * 	设置退出超时时间
+	 * */
+	public void setTimeOutQuit(int value) {
+		this.timeout_quit = value;
+	}
+	
 	
 	
 }

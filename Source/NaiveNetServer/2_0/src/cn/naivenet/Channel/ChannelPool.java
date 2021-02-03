@@ -1,11 +1,15 @@
 package cn.naivenet.Channel;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cn.naivenet.Config.ChannelInfo;
 import cn.naivenet.User.CodeMap;
 import cn.naivenet.User.NaiveNetMessage;
+import cn.naivenet.User.NaiveNetRequestData;
 import cn.naivenet.User.NaiveNetResponseData;
+import cn.naivenet.User.NaiveNetUserMessage;
 import cn.naivenet.User.User;
 
 public class ChannelPool {
@@ -21,6 +25,22 @@ public class ChannelPool {
 		this.channelManager = channelManager;
 		this.user = user;
 		this.initEvent();
+	}
+	
+	/**
+	 *	申请退出一个Channel
+	 *	@param channelID 需要退出的频道ID 
+	 **/
+	public void quitChannel(Integer channelID) {
+		ChannelHandler ch = this.hashmapIDAndChannel.get(channelID);
+		if(ch != null) {
+			try {
+				ch.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
 	}
 
 	/**
@@ -89,6 +109,7 @@ public class ChannelPool {
 				NaiveNetMessage nnm = handler.getMessageHandler();
 				NaiveNetResponseData nrd = new NaiveNetResponseData(nnm,CodeMap.CHANNEL_REFUSE_CONNECT,false);
 				nnm.user.responseClient(nrd);
+				
 			}
 			
 		};
@@ -97,7 +118,10 @@ public class ChannelPool {
 
 			@Override
 			public void on(ChannelHandler handler, byte[] data) {
-				
+				//授权成功
+				NaiveNetMessage msg = handler.getMessageHandler();
+				NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.OK,true);
+				msg.user.responseClient(res);
 			}
 			
 		};
@@ -106,6 +130,18 @@ public class ChannelPool {
 
 			@Override
 			public void on(ChannelHandler handler, byte[] data) {
+				
+				NaiveNetUserMessage msg = new NaiveNetUserMessage(data,user);
+				if(msg.channelid == 0) { //对NS的
+					if(msg.control == 1) { //请求类型
+						channelManager.dealNCToNS(msg,handler);
+					}else if(msg.control == 0) { //回复类型
+						
+					}
+				}else {
+					msg.setChannelID(getChannelID(handler));
+					user.dealNCToC(msg);
+				}
 				
 			}
 			
@@ -129,4 +165,52 @@ public class ChannelPool {
 		
 	}
 
+	/**
+	 * 	处理客户端发往NC的数据请求
+	 * */
+	public void dealClientToNC(NaiveNetUserMessage msg) {
+		ChannelHandler ch = this.hashmapIDAndChannel.get(msg.channelid);
+		if(ch == null) {
+			NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.CHANNEL_NOT_ESTABLISHED_WITH_SERVER,false);
+			msg.user.responseClient(res);
+			return;
+		}
+		ch.send(msg.data);
+		
+	}
+
+	/**
+	 * 	当用户发生断线恢复时对所有已经连接的NC发起通知
+	 * */
+	public void onUserRecover() {
+		NaiveNetRequestData data = new NaiveNetRequestData(1,0,0,"onrecover",new byte[0]);
+		this.notifyChannels(data.genData());
+	}
+	
+	/**
+	 * 	广播给所有已经建立连接的NC消息
+	 * */
+	private void notifyChannels(byte[] data) {
+		Iterator it = this.hashmapChannelAndID.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry e = (Map.Entry)it.next();
+			ChannelHandler ch = (ChannelHandler)e.getValue();
+			ch.send(data);
+		}
+	}
+
+	/**
+	 * 	当用户发生网络断线时的通知
+	 * */
+	public void onUserBreak() {
+		NaiveNetRequestData data = new NaiveNetRequestData(1,0,0,"onbreak",new byte[0]);
+		this.notifyChannels(data.genData());
+	}
+
+	/**
+	 * 	提供Channel句柄给出ChannelID
+	 * */
+	public int getChannelID(ChannelHandler channel) {
+		return this.hashmapChannelAndID.get(channel);
+	}
 }

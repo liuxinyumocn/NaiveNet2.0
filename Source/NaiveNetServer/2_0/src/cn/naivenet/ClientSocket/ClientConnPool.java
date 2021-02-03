@@ -43,6 +43,8 @@ public class ClientConnPool {
 	private String SSLKeyStoreFilePath;
 	private String SSLPassword;
 	
+	private int timeout_break = 10000;
+	
 	private ConcurrentLinkedDeque<ClientHandler> clientList; //用户连接句柄表
 	
 	public ClientConnPool(NaiveNetServerHandler naivenetserverhandler) {
@@ -53,7 +55,21 @@ public class ClientConnPool {
 		this.clientList = new ConcurrentLinkedDeque<>();
 		
 	}
-	
+
+	/**
+	 * 	获取断线超时时间
+	 * */
+	public int getTimeOutBreak() {
+		return this.timeout_break;
+	}
+
+	/**
+	 * 	设置断线超时时间
+	 * */
+	public void setTimeOutBreak(int value) {
+		this.timeout_break = value;
+	}
+
 	/**
 	 * 	以普通协议启动服务
 	 * 	@param port 服务端口号
@@ -119,6 +135,7 @@ public class ClientConnPool {
 		protected void initChannel(SocketChannel arg0) throws Exception {
 			//产生新的连接
 			ClientHandler client = new ClientHandler(arg0,ClientConnPool.this);
+			clientList.add(client);
 			ChannelPipeline pipeline = arg0.pipeline();
 			
 			//出入流量计数器

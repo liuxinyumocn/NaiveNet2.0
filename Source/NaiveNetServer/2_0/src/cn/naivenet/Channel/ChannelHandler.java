@@ -1,5 +1,6 @@
 package cn.naivenet.Channel;
 
+import cn.naivenet.TimerEvent.Task;
 import cn.naivenet.TimerEvent.Timer;
 import cn.naivenet.TimerEvent.TimerTask;
 import cn.naivenet.User.NaiveNetMessage;
@@ -30,12 +31,14 @@ public class ChannelHandler {
 		return msg;
 	}
 	
+	
+	private Task authtimer;
 	/**
 	 * 	初始化身份验证模块
 	 * 	在与Channel完成通信后的3000ms内，Channel端必须给出正确的回应
 	 * */
 	private void initCheck() {
-		Timer.SetTimeOut(new TimerTask() {
+		authtimer = Timer.SetTimeOut(new TimerTask() {
 
 			@Override
 			public void Event() {
@@ -141,5 +144,19 @@ public class ChannelHandler {
 		return this.channel;
 	}
 
+	public void _onAuthChannel() {
+		if(this.onAuth != null)
+			this.onAuth.on(this, null);
+		this.level = 1;
+		if(authtimer != null)
+			Timer.CancelTask(authtimer);
+	}
+
+	/**
+	 * 	向Channel发送数据
+	 * */
+	public void send(byte[] data) {
+		this.channel.writeAndFlush(data);
+	}
 	
 }

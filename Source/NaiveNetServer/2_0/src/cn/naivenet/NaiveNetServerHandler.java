@@ -23,7 +23,8 @@ public class NaiveNetServerHandler {
 		channelManager = new ChannelManager(this);
 		clientConnPoll = new ClientConnPool(this);
 		userManager = new UserManager(this);
-		
+
+		userManager.setTimeOutQuit(config.getConf("USER_QUIT_TIMEOUT").getInt());
 		this.initEvent();
 		this.initAdminBox();
 	}
@@ -52,6 +53,7 @@ public class NaiveNetServerHandler {
 	 * */
 	public void launch() throws Exception {
 		String jks = config.getConf("SSL_JKS_FILEPATH").getStr();
+		clientConnPoll.setTimeOutBreak(config.getConf("USER_BREAK_TIMEOUT").getInt());
 		if(jks.equals("")) { //普通模式
 			clientConnPoll.launch(config.getConf("SERVER_PORT").getInt());
 		}else {

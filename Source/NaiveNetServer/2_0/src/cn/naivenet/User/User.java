@@ -1,7 +1,12 @@
 package cn.naivenet.User;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import cn.naivenet.Channel.ChannelManager;
 import cn.naivenet.Channel.ChannelPool;
@@ -20,6 +25,7 @@ public class User {
 	
 	private byte level = 0;		// 用户的状态等级 0 未认证 1 认证
 	private String sessionid = "";
+	private long start_timestamp = 0;
 	
 	/**
 	 * 	初始化用户句柄
@@ -29,13 +35,17 @@ public class User {
 		this.userManager = userManager;
 		this.channelManager = channelManager;
 		this.channelPool = this.channelManager.createChannelPool(this);
-		
+		this.start_timestamp = System.currentTimeMillis();
 		this._initAuthCheck();
-		this._initBreakAndQuitCheck();
 		this._initEvent();
 	}
 
-
+	private void removeEvent() {
+		this.clientHandler.setOnCloseListener(null);
+		this.clientHandler.setOnExceptionCaughtListener(null);
+		this.clientHandler.setOnReadListener(null);
+	}
+	
 	/**
 	 * 	初始化相关回调函数
 	 * */
@@ -45,17 +55,65 @@ public class User {
 
 			@Override
 			public void on(ClientHandler handler, byte[] data) { //当发生网络句柄关闭事件
+				removeEvent();
+				clientHandler = null;
 				//回收掉相关的事件
 				Timer.CancelTask(timertask_auth);
+				//如果用户已经完成授权 再最后保留一段时间 若仍然没有完成网络恢复 则彻底退出。否则直接退出
+				if(isAuth()) {
+					_initQuitCheck();
+				}else {
+					//直接退出
+					quit();
+				}
 				
-				System.out.println("句柄关闭");
-				
+			}
+			
+		});
+		
+		this.clientHandler.setOnReadListener(new ClientSocketEvent() {
+
+			@Override
+			public void on(ClientHandler handler, byte[] data) {
+				//接收来自客户端的消息
+				NaiveNetUserMessage msg = new NaiveNetUserMessage(data,User.this);
+				if(msg.control == 1) { //NS NC
+					if(msg.channelid == 0) { //NS
+						User.this.dealCToNS(msg);
+					}else { //NC
+						User.this.channelPool.dealClientToNC(msg);
+					}
+				}else if(msg.control == 0 || msg.control == 3) { //回复
+					if(msg.channelid != 0) {
+						User.this.channelPool.dealClientToNC(msg);
+					}else { //对NS回复，目前版本客户端没有对NS的回复消息
+						
+					}
+				}
 			}
 			
 		});
 		
 	}
 	
+	private Task timertask_quit;
+	
+	/**
+	 * 	初始化退出检测器
+	 * */
+	private void _initQuitCheck() {
+		//通知所有的Channel发生了断线
+		this.channelPool.onUserBreak();
+		timertask_quit = Timer.SetTimeOut(new TimerTask() {
+
+			@Override
+			public void Event() {
+				//超时彻底断线
+				quit();
+			}
+			
+		}, this.userManager.getTimeOutQuit());
+	}
 	
 	private Task timertask_auth;
 	
@@ -79,13 +137,6 @@ public class User {
 				
 			}, this.userManager.getNaiveNetServerHandler().config.getConf("USER_AUTH_TIMEOUT").getInt());
 		}
-		
-	}
-	
-	/**
-	 * 	初始化掉线与退出检测器
-	 * */
-	private void _initBreakAndQuitCheck() {
 		
 	}
 	
@@ -210,7 +261,8 @@ public class User {
 	 * 	用户释放资源退出
 	 * */
 	public void quit() {
-		this.clientHandler.close();
+		if(this.clientHandler != null)
+			this.clientHandler.close();
 		this.userManager.removeUser(this);
 	}
 
@@ -220,6 +272,105 @@ public class User {
 	 * */
 	public void enterChannel(NaiveNetMessage msg) {
 		this.channelPool.enterChannel(msg);
+	}
+
+	/**
+	 * 	请求退出已经进入的Channel
+	 * 	@param channelID 频道ID
+	 * */
+	public void quitChannel(Integer channelID) {
+		this.channelPool.quitChannel(channelID);
+	}
+
+	/**
+	 * 	恢复网络通信句柄
+	 * */
+	public void recoverChannelHandler(NaiveNetMessage msg) {
+		if(this.timertask_quit != null){
+			Timer.CancelTask(this.timertask_quit);
+			this.timertask_quit = null;
+		}
+		this.closeClientHandler();
+		ClientHandler newHandler = msg.user.clientHandler;
+		this.clientHandler = newHandler;
+		this._initEvent();
+		//新的User将被回收
+		msg.user.release();
+		this.channelPool.onUserRecover();
+	}
+
+	/**
+	 * 	获取用户的通信句柄
+	 * */
+	public ClientHandler getClientHandler() {
+		return this.clientHandler;
+	}
+	
+	/**
+	 * 	关闭现有的通信句柄
+	 * */
+	private void closeClientHandler() {
+		if(this.clientHandler != null) {
+			this.removeEvent();
+			this.clientHandler.close();
+		}
+	}
+	
+	/**
+	 * 	回收当前User 通常在恢复状态时，新的User中的ClientHandler被移至旧的User，新User需要释放
+	 * */
+	public void release() {
+		if(this.clientHandler != null) {
+			this.removeEvent();
+			this.clientHandler = null;
+		}
+		this.quit();
+	}
+
+	/**
+	 * 	处理来自NC的数据
+	 * */
+	public void dealNCToC(NaiveNetUserMessage msg) {
+		this.clientHandler.send(msg.data);
+	}
+	
+	/*
+	 * 用户句柄的会话机制
+	 * */
+	private ConcurrentHashMap<String,byte[]> sessionStore = null;
+
+	/**
+	 * 	设置SESSION数据
+	 * */
+	public void setSession(String key,byte[] value) {
+		sessionStore.put(key, value);
+	}
+
+	/**
+	 * 	获取SESSION数据
+	 * */
+	public byte[] getSession(String key) {
+		return sessionStore.get(key);
+	}
+	
+	/**
+	 * 	清除SESSION数据
+	 * */
+	public void clearSession() {
+		sessionStore.clear();
+	}
+
+	public String getLinkInfo() {
+		JSONObject json = new JSONObject();
+		try {
+			InetSocketAddress ipSocket = (InetSocketAddress)this.clientHandler.getChannel().remoteAddress();
+			json.put("ip", ipSocket.getAddress().getHostAddress());
+			json.put("starttimestamp", this.start_timestamp);
+			return json.toString();
+		} catch (JSONException e) {
+			
+		}
+		return "";
 	}
 
 }
