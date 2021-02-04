@@ -5,6 +5,7 @@ import cn.naivenet.Channel.NaiveNetChannel;
 import cn.naivenet.Channel.NaiveNetController;
 import cn.naivenet.Channel.NaiveNetEvent;
 import cn.naivenet.Channel.NaiveNetMessage;
+import cn.naivenet.Channel.NaiveNetOnResponse;
 import cn.naivenet.Channel.NaiveNetResponse;
 import cn.naivenet.Channel.User;
 
@@ -22,8 +23,26 @@ public class TestChannel {
 			public NaiveNetResponse onRequest(NaiveNetMessage msg) {
 				System.out.println("ctrl1 访问到了 参数是："+new String(msg.param));
 				msg.user.auth(null);
+				msg.user.setSession("abc", msg.param, null);
 				
-				return msg.getResponseHandler("ctrl1  response data 123");
+				return msg.getResponseHandler("ctrl1  response data"+new String(msg.param));
+			}
+			
+		});
+		box1.addController(new NaiveNetController("ctrl2") {
+
+			@Override
+			public NaiveNetResponse onRequest(NaiveNetMessage msg) {
+				msg.user.getSession("abc", new NaiveNetOnResponse() {
+
+					@Override
+					public void OnComplete(int code, byte[] data) {
+						System.out.println("session:"+new String(data));
+						
+					}
+					
+				});
+				return null;
 			}
 			
 		});

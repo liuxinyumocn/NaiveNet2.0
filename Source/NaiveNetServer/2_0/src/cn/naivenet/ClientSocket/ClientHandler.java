@@ -1,8 +1,8 @@
 package cn.naivenet.ClientSocket;
 
-import cn.naivenet.TimerEvent.Task;
+import java.util.concurrent.ScheduledFuture;
+
 import cn.naivenet.TimerEvent.Timer;
-import cn.naivenet.TimerEvent.TimerTask;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.socket.SocketChannel;
@@ -67,7 +67,7 @@ public class ClientHandler {
 	 * */
 	public void _onClose() {
 		if(timeoutTimertask != null) {
-			Timer.CancelTask(timeoutTimertask);
+			Timer.CancelTimeout(timeoutTimertask);
 		}
 		this.pool._onClientClose(this);
 		if(this.onClose != null)
@@ -116,29 +116,29 @@ public class ClientHandler {
 	}
 
 	
-	private Task timeoutTimertask;
+	private ScheduledFuture timeoutTimertask;
 	
 	/**
 	 * 	超时检测器
 	 * 	当超过特定时间客户端与服务器没有产生通信，则判定客户端发生离线
 	 * */
 	private void resetTimeOutCheck() {
-
+		
 		if(timeoutTimertask != null) {
-			Timer.CancelTask(timeoutTimertask);
+			Timer.CancelTimeout(timeoutTimertask);
 		}
 		
-		timeoutTimertask = Timer.SetTimeOut(new TimerTask() {
+		timeoutTimertask = Timer.SetTimeout(new Runnable() {
 
 			@Override
-			public void Event() {
+			public void run() {
 				//数据超时
 				timeoutTimertask = null;
-				System.out.println("Client Handler timeout");
 				close();
 			}
 			
 		}, this.pool.getTimeOutBreak());
+		
 	}
 
 	/**

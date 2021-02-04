@@ -1,8 +1,8 @@
 package cn.naivenet.Channel;
 
-import cn.naivenet.TimerEvent.Task;
+import java.util.concurrent.ScheduledFuture;
+
 import cn.naivenet.TimerEvent.Timer;
-import cn.naivenet.TimerEvent.TimerTask;
 import cn.naivenet.User.CodeMap;
 import cn.naivenet.User.NaiveNetMessage;
 import cn.naivenet.User.NaiveNetResponseData;
@@ -33,16 +33,16 @@ public class ChannelHandler {
 	}
 	
 	
-	private Task authtimer;
+	private ScheduledFuture authtimer;
 	/**
 	 * 	初始化身份验证模块
 	 * 	在与Channel完成通信后的3000ms内，Channel端必须给出正确的回应
 	 * */
 	private void initCheck() {
-		authtimer = Timer.SetTimeOut(new TimerTask() {
+		authtimer = Timer.SetTimeout(new Runnable() {
 
 			@Override
-			public void Event() {
+			public void run() {
 				//如果到达3s后未完成验证，则该链接为失效连接
 				if(level == 0) { //无效的连接
 					onUnAuth.on(ChannelHandler.this, null);
@@ -52,8 +52,9 @@ public class ChannelHandler {
 						
 					}
 				}
-				
-			}}, 3000);
+			}
+			
+		}, 3000);
 		
 	}
 
@@ -150,7 +151,7 @@ public class ChannelHandler {
 			this.onAuth.on(this, null);
 		this.level = 1;
 		if(authtimer != null)
-			Timer.CancelTask(authtimer);
+			Timer.CancelTimeout(authtimer);
 		//回应客户端
 		NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.OK,true);
 		msg.user.responseClient(res);

@@ -1,8 +1,8 @@
 package cn.naivenet.Channel;
 
-import cn.naivenet.TimerEvent.Task;
+import java.util.concurrent.ScheduledFuture;
+
 import cn.naivenet.TimerEvent.Timer;
-import cn.naivenet.TimerEvent.TimerTask;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
@@ -14,7 +14,7 @@ class NettyHandler_Auth extends ChannelInboundHandlerAdapter {
 	
 	private ClientHandler client;
 	private NaiveNetChannelServer server;
-	private Task t;
+	private ScheduledFuture t;
 	
 	public NettyHandler_Auth(ClientHandler client,NaiveNetChannelServer server) {
 		this.client = client;
@@ -28,10 +28,10 @@ class NettyHandler_Auth extends ChannelInboundHandlerAdapter {
 	 * 	初始化授权检查器
 	 * */
 	private void initAuthCheck() {
-		t = Timer.SetTimeOut(new TimerTask() {
+		t = Timer.SetTimeout(new Runnable() {
 
 			@Override
-			public void Event() {
+			public void run() {
 				
 				fail();
 				
@@ -75,7 +75,7 @@ class NettyHandler_Auth extends ChannelInboundHandlerAdapter {
 	 * 	成功
 	 * */
 	private void success(ChannelHandlerContext ctx) {
-		Timer.CancelTask(t);
+		Timer.CancelTimeout(t);
 		client.send("NAIVENETCHANNEL CODE[OK]".getBytes());
 		ChannelPipeline pip = ctx.pipeline();
 		pip.addLast(new NettyHandler_Deal(client,server));

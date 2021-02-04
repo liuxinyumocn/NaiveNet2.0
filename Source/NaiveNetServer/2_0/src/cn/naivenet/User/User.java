@@ -4,17 +4,17 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import cn.domoe.naive.log.Log;
 import cn.naivenet.Channel.ChannelManager;
 import cn.naivenet.Channel.ChannelPool;
 import cn.naivenet.ClientSocket.ClientHandler;
 import cn.naivenet.ClientSocket.ClientSocketEvent;
-import cn.naivenet.TimerEvent.Task;
 import cn.naivenet.TimerEvent.Timer;
-import cn.naivenet.TimerEvent.TimerTask;
 
 public class User {
 
@@ -58,7 +58,7 @@ public class User {
 				removeEvent();
 				clientHandler = null;
 				//回收掉相关的事件
-				Timer.CancelTask(timertask_auth);
+				Timer.CancelTimeout(timertask_auth);
 				//如果用户已经完成授权 再最后保留一段时间 若仍然没有完成网络恢复 则彻底退出。否则直接退出
 				if(isAuth()) {
 					_initQuitCheck();
@@ -96,7 +96,7 @@ public class User {
 		
 	}
 	
-	private Task timertask_quit;
+	private ScheduledFuture timertask_quit;
 	
 	/**
 	 * 	初始化退出检测器
@@ -104,10 +104,10 @@ public class User {
 	private void _initQuitCheck() {
 		//通知所有的Channel发生了断线
 		this.channelPool.onUserBreak();
-		timertask_quit = Timer.SetTimeOut(new TimerTask() {
+		timertask_quit = Timer.SetTimeout(new Runnable() {
 
 			@Override
-			public void Event() {
+			public void run() {
 				//超时彻底断线
 				quit();
 			}
@@ -115,7 +115,7 @@ public class User {
 		}, this.userManager.getTimeOutQuit());
 	}
 	
-	private Task timertask_auth;
+	private ScheduledFuture timertask_auth;
 	
 	/**
 	 * 	初始化认证检测器
@@ -123,10 +123,10 @@ public class User {
 	private void _initAuthCheck() {
 		
 		if(this.level == 0) { //未认证状态下5000秒后将强制退出连接
-			timertask_auth = Timer.SetTimeOut(new TimerTask() {
+			timertask_auth = Timer.SetTimeout(new Runnable() {
 
 				@Override
-				public void Event() {
+				public void run() {
 					if (level == 0) {
 						//超时自动断线
 						
@@ -191,8 +191,6 @@ public class User {
 		for(int i=0;i<User.BOXs.size();i++) {
 			res = User.BOXs.get(i).deal((NaiveNetMessage)msg);
 			if(res != null) {
-				System.out.println(this);
-				System.out.println(msg.controller);
 				this.responseClient(res);
 				return;
 			}
@@ -301,11 +299,8 @@ public class User {
 	 * */
 	public void recoverChannelHandler(NaiveNetMessage msg) {
 		//this是旧的User，msg.user 是新的user 
-		System.out.println("old");
-		System.out.println(this);
-		System.out.println(msg.user);
 		if(this.timertask_quit != null){
-			Timer.CancelTask(this.timertask_quit);
+			Timer.CancelTimeout(this.timertask_quit);
 			this.timertask_quit = null;
 		}
 		this.closeClientHandler();
@@ -317,6 +312,10 @@ public class User {
 		msg.user.release();
 		
 		this.channelPool.onUserRecover();
+		
+		//回复客户端
+		NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.OK,true);
+		this.responseClient(res);
 	}
 
 	/**
@@ -341,10 +340,10 @@ public class User {
 	 * */
 	public void release() {
 		if(this.timertask_auth != null) {
-			Timer.CancelTask(this.timertask_auth);
+			Timer.CancelTimeout(this.timertask_auth);
 		}
 		if(this.timertask_quit != null) {
-			Timer.CancelTask(this.timertask_quit);
+			Timer.CancelTimeout(this.timertask_quit);
 		}
 		
 		this.clientHandler = null;
@@ -361,7 +360,7 @@ public class User {
 	/*
 	 * 用户句柄的会话机制
 	 * */
-	private ConcurrentHashMap<String,byte[]> sessionStore = null;
+	private ConcurrentHashMap<String,byte[]> sessionStore = new ConcurrentHashMap<>();
 
 	/**
 	 * 	设置SESSION数据

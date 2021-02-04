@@ -5,6 +5,7 @@ import java.security.KeyStore;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLEngine;
 
 import cn.naivenet.NaiveNetServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -21,6 +22,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
@@ -141,6 +143,10 @@ public class ClientConnPool {
 			//出入流量计数器
 //			pipeline.addLast(new InCounterHandler());
 //			pipeline.addLast(new OutCounterHandler());
+			if(openssl) {
+				SSLEngine sslEngine = sslContext.newEngine(arg0.alloc());
+				pipeline.addLast(new SslHandler(sslEngine));
+			}
 			
 			//解析协议
 			pipeline.addLast(new HttpServerCodec());

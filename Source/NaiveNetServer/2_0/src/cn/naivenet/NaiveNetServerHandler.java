@@ -8,6 +8,7 @@ import cn.naivenet.ClientSocket.ClientConnPool;
 import cn.naivenet.ClientSocket.ClientHandler;
 import cn.naivenet.ClientSocket.ClientSocketEvent;
 import cn.naivenet.Config.NaiveNetConfig;
+import cn.naivenet.TimerEvent.Timer;
 import cn.naivenet.User.NaiveNetBox;
 import cn.naivenet.User.UserManager;
 
@@ -75,6 +76,7 @@ public class NaiveNetServerHandler {
 	 * */
 	public void shutdown() throws Exception {
 		clientConnPoll.shutdown();
+		Timer.shutdown();
 	}
 
 	/**

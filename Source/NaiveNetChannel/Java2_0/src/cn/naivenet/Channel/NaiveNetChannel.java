@@ -1,5 +1,7 @@
 package cn.naivenet.Channel;
 
+import cn.naivenet.TimerEvent.Timer;
+
 /**
  * NaiveNetChannel 启动类
  * */
@@ -37,6 +39,7 @@ public class NaiveNetChannel {
 	 * */
 	public void shutdown() throws Exception {
 		this.naiveNetChannelServer.shutdown();
+		Timer.shutdown();
 	}
 	
 	

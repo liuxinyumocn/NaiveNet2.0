@@ -124,6 +124,7 @@ public class ChannelManager {
 	 * 	处理从NC请求NS的消息
 	 * */
 	public void dealNCToNS(NaiveNetUserMessage msg, ChannelHandler handler) {
+		msg.print();
 		NaiveNetResponseData res = null;
 		for(int i = 0;i<this.boxs.size();i++) {
 			res = this.boxs.get(i).deal(msg);

@@ -31,7 +31,7 @@ class ControllerRecover extends NaiveNetController {
 		//替换通信句柄		
 		user.recoverChannelHandler(msg);
 		
-		return null;
+		return new NaiveNetResponseData();	//使用CANCEL不提交回复
 	}
 	
 }

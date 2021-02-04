@@ -77,8 +77,9 @@ public class NaiveNetUserMessage extends NaiveNetMessage{
 		return res;
 	}
 	
-	private void print() {
-		System.out.println("controller : ["+this.controller+"]");
+	public void print() {
+		System.out.print("channel_id : ["+this.channelid+"]");
+		System.out.print("controller : ["+this.controller+"]");
 		System.out.println("param :["+new String(this.param)+"]");
 	}
 

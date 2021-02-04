@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.domoe.naive.log.Log;
 import cn.naivenet.Config.ChannelInfo;
 import cn.naivenet.User.CodeMap;
 import cn.naivenet.User.NaiveNetMessage;
