@@ -1,8 +1,8 @@
-# NaiveNet应用通信组件2.0
+# NaiveNet应用通信组件2.5+ 正式版
 
 NaiveNet它是基于NIO网络模型设计完成的网络通信组件，这套组件可以让我们的HTML5、各类小程序/小游戏以长连接（Web Socket）通信模式开发应用，面向需求的高度封装使得开发者无需关注长连接的网络通信细节从而高效的开发应用。如果你想做一个实时交互应用比如一个实时的小游戏，或者是在线的多平台聊天室，甚至你有更好的实时交互创意，那么学会使用NaiveNet会让你事半功倍。
 
-[主页](http://www.naivenet.cn/ "主页") （ http://www.naivenet.cn/ ）
+[主页（正在备案以GitHub仓库版本为准）](http://www.naivenet.cn/ "主页") （ http://www.naivenet.cn/ ）
 
 [开发文档](http://www.naivenet.cn/NaiveNetDoc.pdf "开发文档") （ http://www.naivenet.cn/NaiveNetDoc.pdf ）
 
