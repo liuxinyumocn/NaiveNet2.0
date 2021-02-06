@@ -4,10 +4,10 @@ NaiveNet它是基于NIO网络模型设计完成的网络通信组件，这套组
 
 [主页（正在备案以GitHub仓库版本为准）](http://www.naivenet.cn/ "主页") （ http://www.naivenet.cn/ ）
 
-[开发文档](http://www.naivenet.cn/NaiveNetDoc.pdf "开发文档") （ http://www.naivenet.cn/NaiveNetDoc.pdf ）
+[开发文档](http://naivenet.domoe.cn/NaiveNetDoc.pdf "开发文档") （ http://naivenet.domoe.cn/NaiveNetDoc.pdf ）
 
 [Bilibili入门视频](https://www.bilibili.com/video/BV1gK411V7mV "Bilibili入门视频") （ https://www.bilibili.com/video/BV1gK411V7mV ）
 
-[在线演示应用（BallBattle）](http://www.naivenet.cn/demo/ballbattle/web-mobile/ "在线演示应用（BallBattle）") （ http://www.naivenet.cn/demo/ballbattle/web-mobile/ ）
+[在线演示应用（BallBattle）](http://naivenet.domoe.cn/demo/ballbattle/web-mobile/ "在线演示应用（BallBattle）") （ http://naivenet.domoe.cn/demo/ballbattle/web-mobile/ ）
 
 NaiveNet支持 微信小程序、微信小游戏、字节跳动小程序、字节跳动小游戏、Cocos Creator等主流小程序平台及游戏开发引擎。
