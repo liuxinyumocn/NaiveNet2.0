@@ -71,7 +71,6 @@ public class ChannelPool {
 			if(ch == null)
 				return;
 			//注册相关的回调事件
-			//System.out.println("添加");
 			this.hashmapChannelAndID.put(ch, id);
 			this.hashmapIDAndChannel.put(id, ch);
 			this.registerEvent(ch);
@@ -93,10 +92,8 @@ public class ChannelPool {
 			public void on(ChannelHandler handler, byte[] data) {
 				//频道连接断开
 				Integer id = hashmapChannelAndID.get(handler);
-				//System.out.println("移除");
 				hashmapChannelAndID.remove(handler);
 				hashmapIDAndChannel.remove(id);
-				
 				//通知客户端频道已经断开连接
 				
 			}
@@ -173,13 +170,11 @@ public class ChannelPool {
 	 * */
 	public void dealClientToNC(NaiveNetUserMessage msg) {
 		ChannelHandler ch = this.hashmapIDAndChannel.get(msg.channelid);
-		//System.out.println(this.hashmapIDAndChannel.size());
 		if(ch == null) {
 			NaiveNetResponseData res = new NaiveNetResponseData(msg,CodeMap.CHANNEL_NOT_ESTABLISHED_WITH_SERVER,false);
 			msg.user.responseClient(res);
 			return;
 		}
-		//System.out.println(this.hashmapIDAndChannel.size());
 		ch.send(msg.data);
 		
 	}

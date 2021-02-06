@@ -151,7 +151,7 @@ public class ClientConnPool {
 			//解析协议
 			pipeline.addLast(new HttpServerCodec());
 			pipeline.addLast(new ChunkedWriteHandler());
-			pipeline.addLast(new HttpObjectAggregator(1024 * 8));
+			pipeline.addLast(new HttpObjectAggregator(65536));
 			pipeline.addLast(new WebSocketServerProtocolHandler("/"));
 			pipeline.addLast(new NettyHandler_WebSocketFrameHandler(client));
 			

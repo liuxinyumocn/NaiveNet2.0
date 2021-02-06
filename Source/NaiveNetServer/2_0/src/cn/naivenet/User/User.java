@@ -38,8 +38,9 @@ public class User {
 		this.start_timestamp = System.currentTimeMillis();
 		this._initAuthCheck();
 		this._initEvent();
+		
 	}
-
+	
 	private void removeEvent() {
 		this.clientHandler.setOnCloseListener(null);
 		this.clientHandler.setOnExceptionCaughtListener(null);
@@ -354,7 +355,8 @@ public class User {
 	 * 	处理来自NC的数据
 	 * */
 	public void dealNCToC(NaiveNetUserMessage msg) {
-		this.clientHandler.send(msg.data);
+		if(this.clientHandler != null)
+			this.clientHandler.send(msg.data);
 	}
 	
 	/*

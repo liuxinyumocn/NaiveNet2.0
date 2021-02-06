@@ -2,37 +2,71 @@
 	{
 		"name":"gobang_auth",
 		"ip":"127.0.0.1",
-		"port":4010,
+		"port":5010,
 		"token":"abcdefg",
-		"auth":false,
-		"group":"gobang"
+		"auth":false
 	},
 	{
 		"name":"gobang_match",
 		"ip":"127.0.0.1",
-		"port":4011,
+		"port":5011,
 		"token":"abcdefg",
-		"auth":true,
-		"group":"gobang"
+		"auth":true
 	},
 	{
 		"name":"gobang_war",
 		"ip":"127.0.0.1",
-		"port":4012,
+		"port":5012,
 		"token":"abcdefg",
-		"auth":true,
-		"group":"gobang"
-	},{
-		"name":"auth",
+		"auth":true
+	},
+	{
+		"name":"gobang_war2",
+		"ip":"94.191.86.145",
+		"port":5012,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
+		"name":"fourchess_auth",
 		"ip":"127.0.0.1",
-		"port":5000,
-		"token":"abcd",
+		"port":5020,
+		"token":"abcdefg",
 		"auth":false
-	},{
-		"name":"play",
+	},
+	{
+		"name":"fourchess_match",
 		"ip":"127.0.0.1",
-		"port":5001,
-		"token":"abcd",
+		"port":5021,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
+		"name":"fourchess_war",
+		"ip":"127.0.0.1",
+		"port":5022,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
+		"name":"blackwhite_auth",
+		"ip":"127.0.0.1",
+		"port":5030,
+		"token":"abcdefg",
+		"auth":false
+	},
+	{
+		"name":"blackwhite_match",
+		"ip":"127.0.0.1",
+		"port":5031,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
+		"name":"blackwhite_war",
+		"ip":"127.0.0.1",
+		"port":5032,
+		"token":"abcdefg",
 		"auth":true
 	}
 ]

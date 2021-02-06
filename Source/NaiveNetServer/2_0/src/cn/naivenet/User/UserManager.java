@@ -73,7 +73,7 @@ public class UserManager {
 	 * */
 	public boolean cancelAuthUser(User user) {
 		String id = user.getSessionID();
-		if(id.equals("") && this.logedUsers.contains(id)) {
+		if(!id.equals("") && this.logedUsers.containsKey(id)) {
 			this.logedUsers.remove(id);
 			return true;
 		}
