@@ -3,10 +3,12 @@ package test;
 import cn.naivenet.Channel.NaiveNetBox;
 import cn.naivenet.Channel.NaiveNetChannel;
 import cn.naivenet.Channel.NaiveNetController;
+import cn.naivenet.Channel.NaiveNetControllerAsync;
 import cn.naivenet.Channel.NaiveNetEvent;
 import cn.naivenet.Channel.NaiveNetMessage;
 import cn.naivenet.Channel.NaiveNetOnResponse;
 import cn.naivenet.Channel.NaiveNetResponse;
+import cn.naivenet.Channel.SyncResult;
 import cn.naivenet.Channel.User;
 
 public class TestChannel {
@@ -29,26 +31,27 @@ public class TestChannel {
 			}
 			
 		});
-		box1.addController(new NaiveNetController("ctrl2") {
+		box1.addController(new NaiveNetControllerAsync("ctrl2") {
 
 			@Override
-			public NaiveNetResponse onRequest(NaiveNetMessage msg) {
+			public void onRequest(NaiveNetMessage msg) {
 				msg.user.getSession("abc", new NaiveNetOnResponse() {
 
 					@Override
 					public void OnComplete(int code, byte[] data) {
-						System.out.println("session:"+new String(data));
+						
+						msg.user.response(msg.getResponseHandler(data));
 						
 					}
 					
 				});
-				return null;
+				
 			}
 			
 		});
 		User.AddBox(box1);
 		
-		channel = new NaiveNetChannel(5000,"abcd");
+		channel = new NaiveNetChannel(3001,"abc");
 		try {
 			channel.setOnNewUserListener(new NaiveNetEvent() {
 

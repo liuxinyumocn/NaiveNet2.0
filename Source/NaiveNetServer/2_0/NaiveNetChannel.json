@@ -1,5 +1,26 @@
 [
 	{
+		"name":"gobang3_auth",
+		"ip":"127.0.0.1",
+		"port":6010,
+		"token":"abcdefg",
+		"auth":false
+	},
+	{
+		"name":"gobang3_match",
+		"ip":"127.0.0.1",
+		"port":6011,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
+		"name":"gobang3_war",
+		"ip":"127.0.0.1",
+		"port":6012,
+		"token":"abcdefg",
+		"auth":true
+	},
+	{
 		"name":"gobang_auth",
 		"ip":"127.0.0.1",
 		"port":5010,
@@ -68,5 +89,12 @@
 		"port":5032,
 		"token":"abcdefg",
 		"auth":true
+	},
+	{
+		"name":"test",
+		"ip":"127.0.0.1",
+		"port":3001,
+		"token":"abc",
+		"auth":false
 	}
 ]

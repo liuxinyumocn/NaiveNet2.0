@@ -60,7 +60,8 @@ public class User {
 						dealNSToNC(msg);
 					}else {
 						NaiveNetResponseData res = dealCToNC(msg);
-						send(res.genData());
+						if(res != null)
+							send(res.genData());
 					}
 				}else if(msg.control == 0 || msg.control == 3) { //回复
 					dealResponse(msg);
@@ -159,17 +160,32 @@ public class User {
 	private NaiveNetResponseData dealCToNC(NaiveNetUserMessage msg) {
 		NaiveNetResponseData res = null;
 		for(int i = 0;i<this.boxs.size();i++) {
-			res = this.boxs.get(i).deal(msg);
+			NaiveNetBox b = this.boxs.get(i);
+			res = b.deal(msg);
 			if(res != null)
 				return res;
+			if(b.dealAsync(msg))
+				return null;
 		}
 		for(int i = 0;i<User.BOXs.size();i++) {
+			NaiveNetBox b = this.BOXs.get(i);
 			res = User.BOXs.get(i).deal(msg);
 			if(res != null) 
 				return res;
+			if(b.dealAsync(msg))
+				return null;
 		}
+		
 		res = new NaiveNetResponseData(msg,CodeMap.NOT_FOUNTD_CONTROLLER,false);
 		return res;
+	}
+	
+	/**
+	 * 	对异步的Controller的请求做出主动回应
+	 * 	@param res 用于回应的NaiveNetResponse，可通过NaiveNetResponse.getResponseHandler() 创建
+	 * */
+	public void response(NaiveNetResponse res) {
+		send(new NaiveNetResponseData(res).genData());
 	}
 	
 	/**
@@ -415,5 +431,7 @@ public class User {
 				);
 		this.genTempMsgId(req);
 	}
+	
+	
 
 }

@@ -12,7 +12,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NaiveNetChannelServer {
+class NaiveNetChannelServer {
 
 	private ServerBootstrap boot;
 	private EventLoopGroup bossGroup;

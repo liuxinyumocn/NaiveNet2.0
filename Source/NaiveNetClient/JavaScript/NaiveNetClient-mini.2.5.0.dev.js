@@ -884,14 +884,13 @@ export default class NaiveNet {
         let n = 0;
         for(let i = start;i<data.length;i++){
             let a = data[i];
-            if(a != 255){
-                return [1,a];
-            }
             value += a;
             n++;
+            if(a != 255){
+                break;
+            }
         }
-
-        return new [n,value];
+        return [n,value];
     }
     
     //解析长度位正文
