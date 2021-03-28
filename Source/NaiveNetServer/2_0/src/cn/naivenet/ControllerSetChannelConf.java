@@ -21,6 +21,7 @@ class ControllerSetChannelConf extends NaiveNetController{
 	public NaiveNetResponseData onRequest(NaiveNetMessage msg) {
 		try {
 			String json = new String(msg.param,"utf-8");
+			System.out.println(json);
 			config.setChannelInfo(json);
 		} catch (UnsupportedEncodingException e) {
 			return new NaiveNetResponseData(msg,CodeMap.DATA_FORMAT_ERROR,false);

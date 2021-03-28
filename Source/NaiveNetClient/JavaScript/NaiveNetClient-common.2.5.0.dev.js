@@ -913,7 +913,7 @@ class NaiveNet {
         let _data = new Uint8Array(data);
         for(let i = 0;i<len;i++){
             if(length > 255){
-                _data = 255;
+                _data[i] = 255;
                 length -= 255;
             }else{
                 _data[i] = length;
